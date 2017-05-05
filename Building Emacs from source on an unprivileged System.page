@@ -1,3 +1,7 @@
+---
+categories: emacs linux
+...
+
 This post is more of a reference for when I need to build emacs from source again on the university machines.
 
 It is a fairly quick process, and should only take an hour or so.  
@@ -6,7 +10,7 @@ Several things are needed for this to work effectively. (I am writing this guide
 
 I haven't looked in depth at what packages are needed to reliably build this, but this was the process I took.
 
-######Require Packages:
+###### Require Packages:
 
 - help2man
 - m4
@@ -74,7 +78,7 @@ export PATH=~/src/autoconf/bin:$PATH
 make
 ```
 
-### Final steps
+#### Final steps
 The final steps in this are to link up the new emacs build from source, to override the system-default (assuming there is one), or adding it to the `$PATH`, so that it can be executed from the terminal with ease.  
 ```
 echo "export PATH=~/src/emacs/src:$PATH >> ~/.bashrc
