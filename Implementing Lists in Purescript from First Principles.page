@@ -1,3 +1,6 @@
+---
+categories: purescript
+...
 
 This is the second article about implementing basic data types from first principles using generic data-types. You can find the first article [here](https://aoeu.me/2016/04/28/implementing-numbers-and-lists-from-first-principles-in-purescript/).
 

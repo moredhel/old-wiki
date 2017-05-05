@@ -1,3 +1,7 @@
+---
+categories: bash zsh term
+...
+
 I don't know about you, but I find it extremely frustrating when I'm working in the terminal, pop open a second terminal to run a second command, then have to _cd_ back to where I was.  
 This is something has plagued me for a while, until such a point that I decided I would have a think about how I could solve it. Below is the solution I came up with.
 
