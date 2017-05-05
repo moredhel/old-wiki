@@ -1,0 +1,44 @@
+__EDIT:__ Having worked to find a reliable and easy to configure emacs environment, I have come across an extremely successful and productive project, going by the name of [Spacemacs](https://github.com/syl20bnr/spacemacs). This project tries to achieve what other projects, such as ([Oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh/)) are trying to achieve.  
+Being an advocate of `zsh` as a default shell, I enjoy the power and flexibility it brings to the command line. I will write more about it [here](http://aoeu.me/my-first-steps-in-configuring-spacemacs/), so watch this space for updates.
+
+I have been looking into Yasnippet and auto-complete over the past couple of months, and have found them to be extremely useful helper tools.
+
+In particular, the context sensitive help provided for python. I almost never find myself resorting to a quick google to find out which order to pass in variables into that library function, or what type is meant to be returned.
+
+Combining this with flycheck, The number of errors in coding has been significantly reduced to levels I could never easily reach or maintain in vim (much as I am loath to admit it).
+I have included my `.emacs` file on [github](http://github.com/hamhut1066/dotfiles) if you are interested.
+
+The interesting lines are outlined below:
+
+Setting flycheck so that errors can quickly be cycled through
+
+	(global-set-key (kbd "C-c n") 'flycheck-next-error)
+	(global-set-key (kbd "C-c p") 'flycheck-previous-error)
+
+Yasnippet:
+
+	(yas-global-mode 1)
+    (global-set-key "C-s" yas/expand)
+    
+This is an easy include, as yasnippet does the majority of its work on its own.
+I have also moved the `yas/expand` function call key binding to `C-i` such that Auto-complet does not conflict with yas-expand.
+
+Auto-complete mode:
+
+	(require 'auto-complete-config)
+	(setq-default ac-sources (add-to-list 'ac-sources 'ac-source-dictionary))
+	(ac-config-default)
+	(ac-set-trigger-key "TAB")
+	(ac-set-trigger-key "<tab>")
+	(global-auto-complete-mode t)
+
+	(setq ac-ignore-case nil)
+    
+Note that I have disbled case-insensitive matching, as I find this a painful experience at the best of times. 
+
+
+I have mainly noted this down, because I have figured out a configuration that works for me, and I want a little context for my reasoning.
+
+I am still to find a way to integrate yas-snippet integrations with auto-complete, do email me at hamhut (at) github-handle.com
+
+Any pointers are welcome, I'm still newbie lisp user.

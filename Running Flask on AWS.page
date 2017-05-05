@@ -1,0 +1,42 @@
+__Note__: I have mostly written this up as a reference to myself, so that I don't forget about it, and hopefully as a quick guide to what turned out to take several days of searching to find. If anyone still has questions after they have read through this post, don't hesitate to get in contact with me (I'll leave finding my email as an exercise to the reader).
+
+I have recently been building a [Flask](flask.pocoo.org) application at work, and have spent the last 3 days trying to get it to run reliably on AWS - ecs.
+
+After a long time spent looking through the logs, and many sample applications (in a variety of languages), I finally managed to track down the issue to Werkzeug.
+
+It turns out that Werkzeug is [really bad](http://stackoverflow.com/a/11150849) at handling IPv6 and IPv4 on the same network.
+
+I managed to reproduce this with the example application on on the flask main page (copied here for convenience)
+
+``` 
+# hello.py
+from flask import Flask
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    return "Hello World!"
+
+if __name__ == "__main__":
+    app.run()
+```
+
+What would happen is that the healthchecks would fail, and a simple ping request could sometimes take up to 40 seconds, if it even went through at all!
+
+I came across one solution that involved using nginx to [route through to uwsgi](https://blog.jverkamp.com/2015/04/03/performance-problems-with-flask-and-docker/). This seemed like it _would_ work, but it seemed pretty messy.
+
+I instead looked for a python server that wasn't implemented on top of Werkzeug, and came across `meinheld` (python2 users are recommended to use `gevent`). 
+
+I then threw together a really simple script (and updated my Dockerfile accordingly):
+
+```
+# _meinheld.py
+import meinheld
+
+from app import app
+
+meinheld.listen(("0.0.0.0", 5000))
+meinheld.run(app)
+```
+
+and I had a fast, responsive Flask app running on AWS ecs, behind a loadbalancer!

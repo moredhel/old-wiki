@@ -1,0 +1,102 @@
+This post is more of a reference for when I need to build emacs from source again on the university machines.
+
+It is a fairly quick process, and should only take an hour or so.  
+
+Several things are needed for this to work effectively. (I am writing this guide against _Scientific Linux_ but it should work with any distribution).
+
+I haven't looked in depth at what packages are needed to reliably build this, but this was the process I took.
+
+######Require Packages:
+
+- help2man
+- m4
+- autoconf
+- emacs
+
+Download the repositories onto your computer, (I used `~/src`, so just change this as appropriate).  
+
+(Disclaimer, I'm not 100% sure this will work. I have added some trouble-shooting at the bottom, which may help if you run into issues.)
+
+#####Building _help2man_
+The first step is to build _help2man_. This should be fairly straightforward.  
+as this is the first local package you are creating, you don't need to start messing around with the `$PATH` variable yet.
+This is a fairly straightforward:
+```
+./configure && make
+```
+note that we do not (cannot) perform a make install, which would allow us to install into the `$PATH` directly.
+
+#####Building _m4_
+Building _m4_ comes next.  
+This too is comparatively simple, we start by prefixing our command with a modification to our `$PATH` -> `PATH=~/src/help2man:$PATH`, and attach our build code on the end:
+```
+export PATH=~/src/help2man:$PATH
+./bootstrap
+./configure
+make
+```
+This should give us a build of _m4_ that should execute fine.
+to test this, you can run `./tests/m4`, and you should get a help screen printed back to you.
+
+#####Building _autoconf_
+now that we have the dependency required for _autoconf_, we can move on to it, and finally onto building _emacs_.
+
+again, modifying the `$PATH` variable, before running the commands:
+```
+export PATH=~/src/m4/tests:$PATH
+./configure
+make
+```
+(You may begin to detect a pattern here).
+
+it seems that the link to `automate` here is actually not working as expected, (ie. hard-coded). so we will have to go in and change the path manually. this can be done with the following command:
+```
+$EDITOR bin/autoconf
+```
+navigate to _~line 383_ (it may have changed, but essentially the following):
+```
+: ${AUTOM4TE='/usr/local/bin/autom4te'}
+```
+and change the path to sync up to the actual path:
+(if anyone knows how to set this from the command-line, I would love to hear it).
+```
+: ${AUTOM4TE='./bin/autom4te'}
+```
+you can now check that _autoconf_ is now working by running `autoconf --help`.  
+At this point, we are ready to configure and build emacs.
+
+#####Building _Emacs_
+The final build for emacs is fairly straightforward.  
+We begin by updating the path, and then we can simply configure and build emacs.
+```
+export PATH=~/src/autoconf/bin:$PATH
+./configure
+make
+```
+
+### Final steps
+The final steps in this are to link up the new emacs build from source, to override the system-default (assuming there is one), or adding it to the `$PATH`, so that it can be executed from the terminal with ease.  
+```
+echo "export PATH=~/src/emacs/src:$PATH >> ~/.bashrc
+```
+or `.zshrc` if you're that way inclined.
+the next thing to do is see if your emacs configuration works.
+so go ahead and start up a second terminal, and type in:
+```
+which emacs
+# ~/src/emacs/src/emacs
+```
+if you get the above output, then you have successfully built emacs into the correct location, and you can call `emacs` from where you are, and enjoy the latest and greatest emacs version.
+
+I hope that this helps you, and I wish you all the best!
+###Something Didn't work...
+- if this something is to do with `help2man`, then try the following commands: (I would recommend looking at the man-pages and understanding what each thing does before running them)
+```
+autoreconf -fi # This regenerates the config. files.
+libtoolize --force # This prepares a package for using libtool.
+autopoint --force
+aclocal # generates a .m4 file for the project.
+autoheader # generates a template header for configure.
+```
+
+[Image Source](http://holywood.be/emacs/wallpaper/)

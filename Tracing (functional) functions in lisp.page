@@ -1,0 +1,79 @@
+Writing small composable functions is a great way to build up a powerful and flexible system. This is becoming a more popular strategy for designing software in software engineering in general.  
+The advantages of these are starting to pay off, and the ability to guarantee the integrity of a function has proven to be a bonus.
+
+This does, however, occasionally come at the price of complexity, (as does all software). I'm here to present an interesting, and powerful tool for easing the debugging of highly recursive and layered software. (__Note__: I assume that you write using pure functions, or a top down approach of functions not knowing anything about the 'world state', beyond what is _absolutely_ necessary, and reducing all I/O to top level control. This is the subject of a whole blog post).
+
+We are going to use the factorial function to describe how Tracing works. Essentially, tracing simply keeps track of how many times one has called the function (that is being traced), and the arguments that were passed in, and ultimately the values that were returned. This may seem trivial, yet it can be extremely powerful.
+
+```
+(defun fact (n) 
+  (if (<= n 2) 1 
+      (* n (fact (- n 1)))))
+```
+
+See above, the simple recursive function. We may not see anything wrong with this initially, but when we try and run it, we see that we are actually getting an incorrect result. Maybe we aren't sure where the issue is, so we can simply hop onto the REPL, and see if we can figure it out.  
+First, we're going to enable tracing for this function.
+
+
+```
+(trace fact) 
+;; (describe 'trace) for more information.
+```
+
+We now have simple tracing of the function, (We will be able to see not only what the input parameters of the function call are, but also the level of nesting, as well as the value returned from the function (if anything).
+
+When we now run this, we get a pretty-printed list of the runtime calls of `fact`.
+
+```
+  0: (FACT 3)
+    1: (FACT 2)
+    1: FACT returned 1
+  0: FACT returned 3
+```
+As we can see, `(fact 3)` returns _3_, we expected it to be _6_, and `(fact 2)` is returning _1_, we are expecting it to return 2, and we are also expecting to see a `(fact 1)`. We can now see that perhaps our if conditional is not strict enough, so we can redefine `fact` to it's correct definition.
+
+```
+(defun fact (n) 
+  (if (< n 2) 1 
+      (* n (fact (- n 1)))))
+```
+
+giving us the trace below.
+
+```
+  0: (FACT 3)
+    1: (FACT 2)
+      2: (FACT 1)
+      2: FACT returned 1
+    1: FACT returned 2
+  0: FACT returned 6
+```
+
+As you can see, we can easily see that we now have the expected output of our function. `(fact 2)` is now correctly returning _2_, as is `(fact 3)` returning _6_.  
+This may seem fairly trivial, but it can provide a way to quickly and easily find the anomalous input to a function, and quickly trace through and debug the problem. I would recommend going through the malisper.me 'debugging lisp' blog series linked below, as it proves an interesting read, and gives you an idea of the kind of power that you can get.
+
+####Bonus Points
+
+Sometimes you don't want to trace a function all the time, but only when it is called from a specific context, (ie. when called from one particular function). There an easy way to do this, the `:wherein` symbol.
+
+If we were to define a function `parent`.
+
+```
+(defun parent (n) (fact n))
+```
+
+We can now restrict the tracing to when we call `fact` through `parent`. This can be done using.
+
+```
+(trace :wherein parent fact)
+```
+
+This is amazingly useful for giving short, concise debug information that is highly relevant.
+
+I hope that some of this information is helpful to you in debugging code, or at least gives some insight into other languages and their approach to debugging code. Some of the ideas can be replicated in other languages to varying levels of success, I would be interested in seeing what is and isn't possible.
+
+---
+
+See [malisper.me](http://malisper.me/2015/07/07/debugging-lisp-part-1-recompilation/) for more interesting tips and tricks on debugging lisp.
+
+Also, if anyone has managed to do this in clojure, please do comment/get in touch, I would be interested to see how you have managed.

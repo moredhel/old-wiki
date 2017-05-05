@@ -1,0 +1,228 @@
+This is something that I ended up doing on a whim yesterday. I have been playing with the coq (https://coq.inria.fr/) theorem prover and, having gone through some basics with it, thought that it could be fun to try and write some of this up in Purescript.
+
+For the impatient, See the _bottom for the whole file_.
+
+For those who don't know what Coq is, (quoting from the website), _Coq is a formal proof management system_. It essentially allows you to write functions, then assert properties of these functions, (reflexivity, commutability, etc.)
+
+We start out with installing Purescript using our favourite method (`brew install purescript` for the OS X users among us). Then we can get down to writing.
+
+This could be done without even prelude, but there are some niceties that we will be using to make use a little easier.
+
+
+
+#####Natural Numbers
+
+---
+
+Modelling the natural numbers has a couple of interesting techniques. One is to use nested lambda expressions to represent running a computation N times (as this could represent the number N). I won't be using this encoding method for this post though. Today, I'll be using _Algebraic Data-Types_ to model numbers.
+
+Algebraic Data-Types, aren't too complicated, they can be thought of as a form of enumeration. Have a look at the definition below, and I'll briefly explain what it is.
+
+```
+data Succ = O | S Succ
+```
+
+The syntax is fairly straight forward. We say that we are defining a new data type called `Succ`, and it will be one of two things. Either it will be `O`, or it will be `S Succ`, where `Succ` is defined above (This is a recursive data-type).
+
+Initially, this may seem a little weird, how do you define numbers with only two things? We will be using _pattern-matching_ and case statements to define the number system.
+
+Before starting, I will point out that I have defined `O` to be 0, and `S Succ'` to be the successor of `Succ'`. This will make more sense as we dive into some examples
+
+######Increment
+
+---
+
+We'll start with the simple case, adding one to a number. This can be done with the following function
+
+```
+inc :: Succ -> Succ
+inc x = S x
+```
+This is the increment function. It takes a value `x`, and increments it by one. As you can see, we know that `x :: Succ` (note: this is the syntax for declaring the type of an identifier, I will be using it whenever I refer to the type of an identifier). We also know that `inc` also returns type `Succ`, so we can only perform operations that return a `Succ` data type from the function.  
+As we currently don't have any functions (as Prelude isn't included), We encode the value `x + 1` as the successor to the value `x`.
+
+######Decrement
+
+---
+
+This is a fairly simple example, let's extend it to also be able to decrement numbers (and call it _dec_).
+
+```
+dec :: Succ -> Succ
+dec O = O
+dec (S x) = x
+```
+
+Note that we don't deal with negative numbers.  
+This function definition introduces the concept of pattern matching.
+Essentially, you can define a constant value on the left hand side (as an argument), and if the argument matches the constant value, then the resultant code is run. I'll clarify this with an example:
+
+```
+dec O         -- > O
+dec (S O)     -- > O
+dec (S (S O)) -- > (S O)
+```
+
+As you can see, we have started building up a basic idea of numbers which we can enumerate.
+
+All that is left now is to implement addition/subtraction/multiplication and raising to a power.
+
+######Addition
+
+---
+
+```
+add :: Succ -> Succ -> Succ
+add x O = x
+add x (S y) = add (S x) y
+```
+
+This is using a recursive definition, where we simultaneously increment the left hand side and decrement the right hand side until the right hand side reaches `O`.
+It is written this way as it is easier to de-structure (that is what the `(S y)` is on the left-hand side) then manipulate the variables appropriately. An equivalent implementation using our previously defined functions can be written as such (implement them and see!):
+
+```
+add' :: Succ -> Succ -> Succ
+add' x O = x
+add' x y = add (inc x) (dec y)
+```
+
+######Subtraction
+
+---
+
+Subtraction is defined similarly to addition, we simply simultaneously decrement both _x_ and _y_ until _y_ becomes `O`. This can similarly be defined using the `dec` function defined above. I will use the destructuring syntax as it is more concise and idiomatic.
+
+```
+sub :: Succ -> Succ -> Succ
+sub O _ = O
+sub x O = x
+sub (S x) (S y) = sub x y
+```
+
+Notice the special case `O _ = O`. This is the case where the left hand side is `O`, so we don't need to evaluate any further (__Note__, the special syntax `_`, means _some variable_. We don't care what it is, and We're too lazy to think of a name for it).
+
+
+######Multiplication
+
+---
+
+Multiplication can be defined in terms of addition. 
+
+```
+2 x 3 == 2 + 2 + 2
+````
+
+We can then define multiplication as addition of the remainder of the multiplication with one element of multiplication. The definition follows.
+
+```
+mult :: Succ -> Succ -> Succ
+mult _ O  = O
+-- mult O _ = O -- u uncomment for performance
+mult x (S y) = add x (mult x y)
+```
+
+A beta-reduction follows:
+
+```
+mult (S (S O)) (S (S (S O)))
+add (S (S O)) (mult (S (S O)) (S (S O)))
+add (S (S O)) (add (S (S O)) (mult (S (S O)) (S O)))
+add (S (S O)) (add (S (S O)) (add (S (S O)) (mult (S (S O)) O)))
+add (S (S O)) (add (S (S O)) (add (S (S O)) O))
+add (S (S O)) (add (S (S O)) (S (S O)))
+add (S (S O)) (S (S (S (S O))))
+(S (S (S (S (S (S O)))))) -- 6
+```
+
+In a slightly easier to parse format:
+
+```
+(x 2 3)
+(+ 2 (x 2 2))
+(+ 2 (+ 2 (x 2 1)))
+(+ 2 (+ 2 (+ 2 (x 2 0))))
+(+ 2 (+ 2 (+ 2 0)))
+(+ 2 (+ 2 2))
+(+ 2 4)
+6
+```
+
+As you may have noticed, this is not the _most_ efficient way to compute, it is more of a theoretical model of computation (in practice!).
+
+######Exponential
+
+---
+
+Lastly we have Exponents. I'll cover this one more briefly, as it covers the same techniques as the previous ones.
+
+```
+exp :: Succ -> Succ -> Succ
+exp _ O = S(O) -- n^0 = 1
+exp x (S y) = mult x (exp x y)
+```
+
+######Conclusion
+
+---
+
+As you can see, we build on top of what we have already defined. The way we define numbers is through basic properties, and building up from fundamentals. I hope this serves to show you that you don't need numbers to count. Numbers can be encoded easily, and it is a fun exercise.  
+
+Have a play with it, and see if you can write some more functions that operate on integers, The whole file is included at the bottom.
+
+You can find the follow up article, [implementing lists in purescript from first principles](https://aoeu.me/2016/05/01/implementing-lists-in-purescript-from-first-principles/)
+
+```
+module Succ where
+
+-- imports
+import Prelude ((+), Show, show)
+
+-- -- data definitions
+data Succ = O | S Succ
+
+-- -- content
+inc :: Succ -> Succ
+inc x = S x
+
+dec :: Succ -> Succ
+dec O = O
+dec (S x) = x
+
+
+add :: Succ -> Succ -> Succ
+add x O = x
+add x (S y) = add (S x) y
+
+add2 :: Succ -> Succ -> Succ
+add2 x O = x
+add2 x y = add (inc x) (dec y)
+
+mult :: Succ -> Succ -> Succ
+mult _ O  = O
+mult x (S y) = add x (mult x y)
+
+sub :: Succ -> Succ -> Succ
+sub O _ = O
+sub x O = x
+sub (S x) (S y) = sub x y
+
+exp :: Succ -> Succ -> Succ
+exp _ O = S(O)
+exp x (S y) = mult x (exp x y)
+
+-- these are helper functions to make working with the above functions easier.
+
+toInt :: Succ -> Int
+toInt O = 0
+toInt (S x) = 1 + toInt x
+
+fromInt :: Int -> Succ
+fromInt 0 = O
+fromInt x = S (fromInt (x - 1))
+
+-- This lets you actually represent the Successor data type on the repl.
+
+instance showSucc :: (Show Int) => Show Succ where
+  show x = show (toInt x)
+```
+

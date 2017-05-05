@@ -1,0 +1,26 @@
+Having very recently moved to `spacemacs`, I can immediately see the advantages it provides.  
+
+Being a dedicated accolite of the _cult of vi_, and have faithfully fought my corner, as any of my fellow devotees would do, right beside me.  
+Lately though, I have been feeling the constraints that vim possesses.
+I have always loved vim for its very rapid startup times, modal editing paradigm, and ubiquity. The simple fact that I can install any base system, and start editing with ease and speed using only the default packages (_vi_), was such a bonus, added with the concept of words, and different modes, to allow for essentially adding several layers atop a keyboard.
+
+Until recently, I had always avoided emacs, on the basis that editing text was an effort of wills, coupled with an early onset of RSI. This was until I came across the _evil-mode_ package. Reading through the supporting documentation, I came across a snippet which instantly set me to downloading emacs to prove them wrong
+> compare the behavior with plain Vim (i.e., without any customization), if there's a difference please file the bug with a description of this difference (and possibly a reference to Vim's documentation)
+
+which can be found [here](https://bitbucket.org/lyro/evil/wiki/Home).
+
+I was sure that I would find it unusable, and feel compelled to retreat back to the safety and security of vim.  
+
+I was wrong.
+
+Emacs was an eye-opening experience. I started by simply installing evil-mode, and learning the new terminology, and how to manage an emacs-ecosystem.  
+From here, I started to try and emulate my vim setup (syntastic, ycm, fugitive). I found that the experience, speed and ease of customisation of the editor environment is both satisfying and profitable.  
+This brings us to _Spacemacs_, and one of the main problems I was facing while using vim. _Asynchrony_, a sore point for many a vim user. For as soon as one starts to create a vim environment with several packages, and custom configurations, bound to external formatting, linting and/or refactoring executables, things start to get complicated, and editing of text starts to get interrupted by calls to run formatting, or even lint and error check the current buffer.
+
+Emacs does in-place syntax checking of the current buffer, offering in-line hints as to errors, or violations of code conventions, all without missing a beat as I write out the body of my function. 
+This is a unique experience, which I was fairly shocked by, as it allowed for extremely fast feedback on all my input, without the cost of randomly blocking as external calls were made. 
+I must admit though, that the scope, and breadth of emacs is a little overwhelming at first, and it took me some time to get to grips with the finer details of the inner workings of emacs. But the benefits that are gained by learning it are worth it! I have actually found joy in learning another language, a language that I feel I can put to good use immediately, and will help me improve my editing capabilities.
+
+_Spacemacs_ is the springboard that has provided a strong base from which to jump, and integrates the best of emacs, into an easily pluggable framework, which provides sane defaults, and a truly first-class experience.
+
+I would (and do) recommend it to any and all _vim_ and _emacs_ users who are in any way unhappy with their default configuration, or are simply on the fence, and would like to try something that has the potential to drastically shift your perspective on how software is developed.

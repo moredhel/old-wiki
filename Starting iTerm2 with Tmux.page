@@ -1,0 +1,13 @@
+This is a problem that I have been facing for a while, and was starting to annoy me somewhat.
+It turns out that the fix was extremely easy. Starting with the latest version of iTerm2, tmux integration has been added to the project, which I have been using on a regular basis. I looked around for a solution, but found nothing that quite worked.
+[This post](https://coderwall.com/p/-mumdg/automatically-reattach-tmux-session-using-iterm2) is what gave me the hint to successfully reattach. My main method of attempting to do this was trying to write something in my `.zshrc` file, and involved environment variables, and many if statements, and more hassle than I was actually getting out.
+
+But, with the information on the page linked above, I could simply add the following line, and everything worked like a dream.
+
+	tmux -CC attach -t base || tmux -CC new -t base
+
+This I put in the iTerm2 Config, under Settings->Profiles->Send text at Startup.
+
+I hope this helps.
+
+/_moredhel_

@@ -1,0 +1,24 @@
+This post is a short post on how to Synchronise Office 365, and all accompanying Services with the Os X System.
+
+Below are posted a series of steps, and tips on how to get this done.
+
+The first step is to open _System Preferences_ and Select _Internet Accounts, you should have a picture as such:
+
+![System Preferences](https://i.imgur.com/jgsCUNX.png)
+
+After this, as you can see on the right, select the __Exchange__ option.  
+Fill in the Required fields, (I am using a custom domain, fill in your own email and password as appropriate)
+
+![Basic Settings](https://i.imgur.com/VPRH3KQ.png)
+
+Then proceed to the next page. This will fail, at this point you will need to change the username to be your email address,
+and set the server address to `smtp.office365.com`. 
+
+![](https://i.imgur.com/RTb2Ls7.png)
+
+Press _continue_ and you should be presented with an _Account Summary_.  
+Press Continue to commit the settings, and then select all the services you would like from Office365.
+
+You will then have an entry on the left, corresponding to the account you have just setup:
+
+![](https://i.imgur.com/Y626I9d.png)

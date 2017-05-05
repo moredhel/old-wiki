@@ -1,0 +1,52 @@
+This is a post about how to get OS X to dual boot happily with Arch Linux. The reason that I post this is because I found it pretty challenging to decipher the documentation (which is very thorough) on the Arch wiki.
+
+To start off with, I headed straight here: https://wiki.archlinux.org/index.php/MacBook, And I would recommend you do the same.
+
+I found that after I had managed to install Arch, the instructions made sense, which unfortunately, wasn't the order I was looking for.
+
+I'm going to walk through (on a high level), what I did, so you can get an intuitive feel for how to do this. Just a as a note, the actual installation of Arch was painless, the hard part was getting GRUB installed, and correctly finding the `/boot` directory of my partition.
+
+```
+# specs
+16GB Ram
+i5 Cpu
+128Gb SSD
+```
+
+I've thrown down my specs so you can see what I'm working with.
+
+Firstly, I wanted to keep OS X, as I want to be able to update the firmware when needed, so I gave 20GB to OS X, leaving 100GB for me to play around with Arch Linux.
+
+It is probably easiest to shrink your drive down from OS X. I would personally recommend doing a clean install though, and just creating the partitions when installing OS X.
+
+So now we have a 20GB partition running OS X, with the rest of the SSD being free.
+
+We reboot into our Arch live environment, and now need to create our partitions.
+
+I personally created a 10GB `/root` partition, and assigned the rest to `/home`. You are welcome to slice this up however you want.
+
+After you have mounted all of the drives to their respective directories under `/mnt`, you need to create a directory `/mnt/boot/efi`, then run `mount /dev/sda1 /mnt/boot/efi`. This lets you get access to the OS X boot partition.
+
+At this point, you can just run `pacstrap /mnt base base-devel`, then `arch-chroot /mnt` into your new system.
+
+At this point, you'll need to install grub as you normally do, then perform one extra step (as detailed on the Macbook page linked above:
+
+```
+# modprobe dm-mod
+# grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=arch_grub --recheck --debug
+# mkdir -p /boot/grub/locale
+# cp /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /boot/grub/locale/en.mo
+```
+
+Then install GRUB:
+
+```
+# grub-mkconfig -o /boot/grub/grub.cfg
+```
+
+At this point, you should be able to reboot, and you should boot straight into GRUB!
+
+Welcome to your new Arch System!
+
+If you have any questions, you can find me on freenode under _#moredhel_, feel free to ping me. Otherwise you can send me an email at my-handle@this-domain.
+

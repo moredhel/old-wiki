@@ -1,0 +1,244 @@
+
+This is the second article about implementing basic data types from first principles using generic data-types. You can find the first article [here](https://aoeu.me/2016/04/28/implementing-numbers-and-lists-from-first-principles-in-purescript/).
+
+This second article is aimed at designing and implementing lists. We are going to write and implement the basic _map_, _filter_ and _fold_ higher order functions too! This gives us an idea of how easy it is to start defining a useful language, which will not only give us powerful abstractions, but also type safety too.
+
+As with the other article, I'm including the whole file at the bottom of the article.
+
+####Setting up the groundwork
+
+----
+
+Before we start with implementing lists, I'm going to go on a slight detour, and show you how booleans can be implemented. It is a fairly easy implementation, so I will go through it quickly. (If you want a more detailed explanation of the workings of these examples, I would recommend going through the previous article, which gives a much better explanation of the procedure. Without further ado, here are the booleans, and their relevant function definitions.
+
+```
+data Bool = True | False
+```
+
+This is it, the entire definition of boolean. We strictly don't need anything else to get started defining filter, and any other boolean related functionality, I will quickly show you an implementation of the `not` function. 
+
+```
+not :: Bool -> Bool
+not True = False
+not False = True
+```
+
+This simply negates the input variable. It should be fairly easy to reason about.
+
+Now we can get started with Lists.
+
+
+####List Type
+
+As with the previous article, we are going to start by  defining the type of a list. This is another recursive type definition, and is defined in a very similar manner.
+
+```
+data List a = Unit | Cons a (List a)
+```
+
+This definition simply says that a list is either of the _Unit_ type (empty), or it has a single element, with a nested List. Notice the first introduction of Type-variables (`a`). This means that we will accept any type in place of `a`. This could be another list type, it could be the _Succ_ type that we defined in the last article, or it could even be the Bool Type. (We haven't gone into Tuples, but this is also possible.)
+
+With this defined, we can start building our lists very easily. In fact, we have al we need. We can define the list `(1, 2, 3` as such
+
+```
+Cons (1 (Cons 2 (Cons 3 Unit)))
+```
+
+This is great. We can now store multiple elements in a list.
+
+
+####Prepending to a List
+What about if we want to prepend an item to a list. This seems pretty fundamental to working with lists. Lets see what we can do. You will normally see this in the following syntax `:`, I have elected to name it `prepend`, to give it a slightly easier name to parse.
+
+This is a very similar definition to the `inc` function that we defined with numbers (you will notice that many of the functions that we define have similar properties to the functions that were defined for numbers.
+
+```
+prepend :: forall a. a -> List a -> List a
+prepend x xs = Cons x xs
+```
+
+This simply takes the current list, and a value that we want to prepend onto the list, and wraps the current list in a cons with the value at the head of the list. The next thing we will want to do is be able to pull the head off the list again.
+
+####Head & Tail of list
+
+We now want to be able to take either the head or tail of the list. As we can see, when we want the head of the list, we just want to do exactly the opposite of what we have defined in the previous function. The _tail_ function, also has exactly the same semantics, but instead throws away the head, and returns the rest of the list.
+
+```
+head :: forall a. List a -> Maybe a
+head (Cons a xs) = Just a
+head Unit = Nothing
+
+tail :: forall a. List a -> Maybe (List a)
+tail Unit = Nothing
+tail (Cons x xs) = Just xs
+```
+
+Note that I have introduced a new concept. _Maybe_. This exists because we must be able to define behaviour for if we try and take an element off an empty list. Thus, we introduce the `Maybe` data-type. It has a simple role. If we try and perform an illegal operation, then return `Nothing`, otherwise, return `Just a`. It is defined as such:
+
+```
+data Maybe = Nothing | Just a
+```
+
+As you can see, it is a very simple definition (actually, much simpler than either numbers or lists). The simple convention of returning `Nothing` with a failed computation allows for some powerful concepts though (Subject for another article).
+
+
+####Reversing a list
+
+Reversing a list can be a little more challenging. I have implemented it using a helper function and an accumulator. It is slightly convoluted, and can be difficult to understand.
+
+```
+reverse :: forall a. List a -> List a
+reverse xs = helper xs Unit
+                      where
+                        helper :: List a -> List a -> List a
+                        helper Unit acc = acc
+                        helper (Cons x xs) acc = helper xs (Cons x acc)
+
+```
+
+This function uses a helper function. All that reverse does is call another function with the list that we want to reverse, and an empty list. The helper function does all of the grunt work  (we can think of the reverse function as more of an interface over a slightly more complex method of reversing a list.)  
+The helper function is fairly simple. If the list that we want to reverse is empty, then return the accumulator. Otherwise, take the head of the list, add it to the head of the accumulator, and recursively call the helper function with the accumulator and the rest of the original list.  
+I would recommend writing this out by hand, and playing around with the implementation to get an intuitive feel for how it works.
+
+These were some basic functions that served to warm up for the main event. Higher-Order functions on Lists.
+
+####Map
+
+Mapping is  a fundamental part of manipulating lists. You want to take a list, and double every element in the list. This can be done easily and expressively using the map function. The function takes in a list, and a function, and applies the function to every element in the list.  
+Let's see how we do this ourselves.
+
+```
+map :: forall a b. (a -> b) -> List a -> List b
+map _ Unit = Unit
+map f (Cons a b) = (Cons (f a) (map f b))
+```
+
+Firstly, what do we do when we have the empty list. We can't apply the function f to anything, because there is nothing in the list, so we can just return the empty list. When we have an element in the list though, we want to call the function on it, and then call the function on the rest of the elements in the list. (Note that we can implement this function with the previous 'head', 'tail' functions that we defined above. I will leave this as an exercise to the reader to try and do, also for all successive functions.)  
+The second case of the map function simply de-structures the array (taking the head and tail), applies the function f to the head, and reconstructs the array again. It also recursively calls itself on the tail of the list. This means that we have map applied to a list, then to the list-1, and so on, until we attempt to apply the function to an empty list, at which point we return the list, and construct a new list.
+
+####Fold
+
+Folding is another interesting function. We have a list, and we want to reduce its dimensionality by 1 degree. Perhaps we want to know the sum of every element in the list. This can be achieved by the following function:
+
+```
+fold :: forall a. (a -> a -> a) -> a -> List a -> a
+fold _ iter Unit = iter
+fold f iter (Cons a b) = fold f (f iter a) b
+```
+
+This takes in an iterator. Think of it as the identity element (although you may not want this, it is normally the case). if summing a list for example, the identity element is 0, because `0 + n = n`. We could apply this function on a list, and it would reduce it to a single number. e.g. 
+
+```
+fold (\x y -> x + y) 0 (Cons 1 (Cons 2 Unit)) -- 3
+```
+
+The final function that we want to implement is filter.
+
+####Filter
+
+Filtering a list is essentially dropping elements from a list that don't satisfy some predicate.
+
+The way we do this, is we define a function, that given the element in the array, will either produce a True or False value. Given this value, the filter function will either accept, or reject the element from the resulting list.
+
+```
+filter :: forall a. (a -> Bool) -> List a -> List a
+filter f Unit = Unit
+filter f (Cons a b) = case f a of
+  True -> Cons a (filter f b)
+  False -> filter f b
+```
+
+Notice that we are using our own definition of booleans. We are relying completely on what we have defined ourselves. The empty list is a trivial case, as defined in previous functions, what is interesting is the nested case conditional. we apply the function f to the head of the list, and depending on the result, we either cons it onto the result of the recursion of the remainder of the list, or we simply return the remainder of the list.
+
+####Conclusion
+
+I realise that the pace of this article is much higher than the previous one. I feel like the previous article stepped through all of the motions, this one is aimed less at the elements of the language (pattern-matching/destructuring) and more about the method of implementing lists, and fundamental functions to apply to the resulting data-types.  
+As a challenge to those who found this fairly easy to pick up, try and implement the `flatMap` function, I have defined the type for you already, so it shouldn't be too hard to work it out (You may need to look into a concat function).
+
+```
+flatmap :: forall a b. (a -> [b]) -> [a] -> [b]
+```
+
+The code is detailed below:
+
+```
+-- Bool.purs
+
+module Bool where
+import Prelude
+
+data Bool = True | False
+
+
+not :: Bool -> Bool
+not True = False
+not False = True
+
+
+instance showBool :: (Show String) => Show Bool where
+  show True = "True"
+  show False = "False"
+```
+
+```
+-- List.purs
+
+module List where
+import Prelude
+import Data.Array
+import Data.Maybe
+
+-- custom imports
+import Bool
+
+data List a = Unit | Cons a (List a)
+
+prepend :: forall a. a -> List a -> List a
+prepend x xs = Cons x xs
+
+map :: forall a b. (a -> b) -> List a -> List b
+map _ Unit = Unit
+map f (Cons a b) = (Cons (f a) (map f b))
+
+fold :: forall a. (a -> a -> a) -> a -> List a -> a
+fold _ iter Unit = iter
+fold f iter (Cons a b) = fold f (f iter a) b
+
+filter :: forall a. (a -> Bool) -> List a -> List a
+filter f Unit = Unit
+filter f (Cons a b) = case f a of
+  True -> Cons a (filter f b)
+  False -> filter f b
+
+head :: forall a. List a -> Maybe a
+head (Cons a xs) = Just a
+head Unit = Nothing
+
+tail :: forall a. List a -> Maybe (List a)
+tail Unit = Nothing
+tail (Cons x xs) = Just xs
+
+concat :: forall a. List a -> List a -> List a
+concat Unit ys = ys
+concat (Cons x xs) ys = (Cons x (concat xs ys))
+
+reverse' :: forall a. List a -> List a
+reverse' xs = helper xs Unit
+                      where
+                        helper :: List a -> List a -> List a
+                        helper Unit acc = acc
+                        helper (Cons x xs) acc = helper xs (Cons x acc)
+
+reverse :: forall a. List a -> List a
+reverse Unit = Unit
+reverse (Cons x xs) = helper xs (Cons x Unit)
+                      where
+                        helper :: List a -> List a -> List a
+                        helper Unit acc = acc
+                        helper (Cons x xs) acc = helper xs (Cons x acc)
+
+
+instance showList :: (Show a) => Show (List a) where
+  show (Cons a xs) = "(" ++ show a ++ "," ++ show xs ++ ")"
+  show Unit = "()"
+```

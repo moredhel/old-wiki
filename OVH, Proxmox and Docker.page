@@ -1,0 +1,21 @@
+Apologies if you have been waiting with baited breath for the next post. I have spent the past couple of weeks writing exams, starting a new job, and migrating to a new server (while wrestling with new technology).
+
+This is a little tangential from my other blog posts, in that I am not going to be focussing on language, but instead on server admin, networking/routing issues, and some things about how OVH works (as I was pretty confused as to how it worked for a while).
+
+Firstly, OVH has excellent customer service, they were on the ball, and willing to discuss the limitations of their networking system with me, (setting up IPV6 can be a pain, more on this later). They were also very quick to notice when I had misconfigured my firewall and essentially locked out all of their diagnostics. I had an interesting couple of hours where I was fighting with a technician in France to restart my server into the mode we each respectively wanted (__Note__: don't disable ping to your main box, they will restart your server).
+
+I started out installing Proxmox on the base machine, as that is what I had heard was a good tool for the job. I was also keen to start messing around with VM's. I have been a docker user for years, and wanted something that would let me run docker containers too.
+
+When I first started setting up the server, I spent several days trying to assign my allocated /64 block of IPv6 addresses to virtual machines with no success. I followed a great blog post [that you can find here](http://www.kiloroot.com/proxmox-kimsufi-ovh-soyoustart-ipv6-host-multiple-containers-and-virtual-machines-on-a-single-kimsufi-server-using-ipv6-and-proxmox/) which describes in detail what I was attempting to do.
+
+After a weekend of working on this, I bought a /30 IPv4 address block, generated some vMAC addresses (all done in the SYS control panel), and I had networking up in half an hour. I will reiterate this, do not use IPv6 unless you know what you're doing, you will spend days on it!
+
+There is one other thing that completely stumped me for several days. __A container is not just a convenience VM__. When using proxmox, I just assumed that a Container (and template) was simply a convenient way of provisioning a VM. Not so, after hours of trying to get docker running in a container, I thought I would try it in a VM for no reason, and it worked! It is not made very clear that Containers and VM's are architecturally different.
+
+I'm finding the proxmox firewall tutorial done by the same person linked above was very useful in getting an understanding how to firewall 'properly'. I have spent a fair amount of time tweaking settings, and figuring out how and what needs to be done to limit the exposure of all my services. It is an interesting, and new field that I'm playing with, as this isn't something I normally play with.
+
+Overall, I'm very happy with the transfer. I was starting to reach a point where paying for, and maintaining so many services (aws, docker, github, bitbucket etc...) was getting tedious/expensive. I have managed to move considerable amounts to my own servers, and it is liberating 'owning' more of my data. I hope to continue migrating data off central services, and move towards a more distributed environment.
+
+If anyone is considering moving over, I'm more than happy to discuss it with you further, or help you with troubleshooting.
+
+Feel free to get in contact with me (preferably via email, I'm pretty bad at responding otherwise)
