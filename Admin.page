@@ -12,12 +12,12 @@ I'm using GrayLog to manage all of my logging needs, Currently it doesn't do ver
 
 I have a simple reverse proxy on each of my servers, all of them exposing an admin panel which lets me have a look at the health of all the requests coming in to the server.
 
-- [vps1](https://vps1.hamhut1066.com:8080/)
-- [vps2](https://vps2.hamhut1066.com:8080/)
-- [vps3](https://vps3.hamhut1066.com:8080/)
+- [vps1](http://vps1.hamhut1066.com:8080/)
+- [vps2](http://vps2.hamhut1066.com:8080/)
+- [vps3](http://vps3.hamhut1066.com:8080/)
 
 # Docker overview
 
 The final thing is a portacle instance which lets me monitor how much space Docker is taking up on each of the instances. It also lets me clean up any dead containers and their respective images without having to jump around
 
-[portacle](https://vps1.hamhut1066.com:9000)
+[portacle](http://vps1.hamhut1066.com:9000)
