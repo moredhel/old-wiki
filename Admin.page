@@ -1,0 +1,23 @@
+This page is a page of data relating to the running of my cluster. It is a less up to date picture of what is going on. See my wekan board for where everything is, and on which machine they are running on. This page serves more as a platform to find all of my administrative tools and webpages.
+
+For those who would access (authorised or otherwise), It is only exposed on a private network.
+
+# Logging
+
+I'm using GrayLog to manage all of my logging needs, Currently it doesn't do very much other than just aggregate everything from all of my docker containers. Probably worth peeking into on a semi-regular basis to check up on things.
+
+[GrayLog](https://log.aoeu.me)
+
+# Reverse Proxies
+
+I have a simple reverse proxy on each of my servers, all of them exposing an admin panel which lets me have a look at the health of all the requests coming in to the server.
+
+- [vps1](https://vps1.hamhut1066.com:8080/)
+- [vps2](https://vps2.hamhut1066.com:8080/)
+- [vps3](https://vps3.hamhut1066.com:8080/)
+
+# Docker overview
+
+The final thing is a portacle instance which lets me monitor how much space Docker is taking up on each of the instances. It also lets me clean up any dead containers and their respective images without having to jump around
+
+[portacle](https://vps1.hamhut1066.com:9000)
