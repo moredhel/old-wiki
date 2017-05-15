@@ -1,0 +1,82 @@
+---
+toc: no
+title: Parallel programming languages & Systems coursework 1
+categories: project uni
+...
+
+## Description
+Look at the below piece of code and describe the full range of possible outcomes, including those which fail to terminate. Indicate the final values of `x` and `y` where they are stable, or describing their behaviour otherwise.
+``` {.c .linenumbers}
+int x = 10, y = 0;
+co
+{
+    while (x!=y) {
+        x = x - 1;
+    }
+    y = y + 1;
+}
+//
+{
+    <await (x==y);>
+    x = 8;
+    y = 2;
+}
+oc
+```
+
+## Discussion
+
+To aid with clarity when discussing the code, I will refer to the thread containing the _while_ loop as _thread 1_, and the following thread as _thread 2_.
+At the point where the threads are spun up the values of `x` and `y` are 10 and 0 respectively.
+
+We can see immediately that _thread 2_ blocks until _thread 1_ has completed processing of the (body of the) while loop. I will skip ahead in the computation to where the body of the while loop is about to execute and the values of `x` and `y` are 1 and 0 respectively. Up until this point the execution has been sequential due to the `<await (x==y):>` code block requirement in _thread 2_.
+
+I will now step through the execution of _thread 1_ starting on line 5. The instruction displayed here can be split into three instructions (read-modify-write). The `await` in _thread 2_ depends on the third and final instruction, the writing of the new value back to memory.
+
+Starting with the simplest model, we assume that _thread 1_ finishes execution before the `await` statement is checked again. In this case when the `x==y` check is performed the values of `x` and `y` are 0 and 1 respectively. As _thread 1_ will have terminated _thread 2_ will fail to terminate.
+
+### Breakdown
+
+This section will describe the combinations that come about if, after `x` is set to 0 and before the while conditional is checked again, the `await` statement is executed. At this point _thread 1_ is on line 4 and _thread 2_ is on line 12.
+
+First I will describe all enumerations that occur at the conditional. _thread 2_ could execute `x = 8`, then the conditional `x!=y` in _thread 1_ could be checked and fail as `x` and `y` would be 8 and 0 respectively. At this point _thread 1_ would loop until at the least `x=2`. At this point there are a few possible ways that the threads could interleave. line 13 could execute, then the conditional could be checked, the while loop would break thread 1 would terminate (thread 2 having already terminated) with the final values of `x=2,y=3`.
+Alternately _thread 1_ could loop a single time, setting `x=1`, then _thread 2_ could terminate (executing line 13) setting `y=2`, at this point _thread 1_ would loop forever with `x` headed for negative infinity (assuming no underflow) and `y=2`.
+The third option is that the loop runs twice more (`x=2`), this then breaks down to 3 more options. Firstly _thread 1_ could perform a read, then _thread 2_ terminates, then thread 1 terminates with values `x=0,y=1`. Alternatively _thread 1_ terminates the _thread 2_ terminates leaving `x=0,y=2` and finally _thread 2_ could terminate followed by _thread 1_ terminating leaving `x=0,y=3`.
+
+A second top level path (starting again with lines 4 and 12 for threads 1 & 2 respectively) would be _thread 2_ terminates, then the conditional (line 4) is checked in _thread 1_, this fails, so the while loop is repeatedly executed until `x=2`, then the loop exits and _thread 1_ terminates with `x=2,y=3`.
+
+The third top level path (starting again with lines 4 and 12 for threads 1 & 2 respectively) would be that the conditional is checked and is false, causing a break from the loop, we now have _thread 1_ at line 7 and _thread 2_ at line 12.
+
+At this point there are three possible interleavings. We can see from the list of remaining statements  that x is no longer affected (other than setting it unconditionally a single time) so will always be set to 8.
+
+The first is that _thread 1_ terminates followed by _thread 2_ leaving `x=8,y=2`.
+The second interleaving starts with _thread 1_ reading `y`, then _thread 2_ terminating followed by _thread 1_ terminating. The values after this are `x=8,y=0`
+The third and final interleaving starts with _thread 2_ terminating then follows with _thread 1_ terminating. The final values for this interleaving are `x=8,y=3`.
+
+## Conclusion
+
+In the previous section I have broken down all possible interleavings of the above defined program. The above program is an example of the inherent complexity in seemingly simple parallel programs and highlights the unaccounted for enumerations of parallel execution.
+
+## Appendix
+
+Below I have included a 'tree-like' structure of my breakdown of the possible enumerations.
+
+```
+- conditional
+    - conditional -> break -> move to `y = y + 1` >>> x=0, y=0 1:7, 2:12 (done) [1]
+    - execute `x = 8` -> conditional -> false -> loop
+        - same as below until `x=2`
+            - !`y=2` executes -> conditional -> break >>> x=2, y=2 1:7, 2:- (done) [2]
+            - ! x-- -> `y=2` -> infinite loop
+            - ! x=0 -> break >>>  x=0, y=0 1:7, 2:13 [3]
+    - execute `x = 8; y = 2` -> conditional -> false -> loop
+        - !x would go down to 2 then break x=2, y=3 $
+- `y = y + 1` (`x` will always be 8, code will always exit)
+    - [1] thread 1 terminate -> thread 2 terminate y=2
+    - thread 1 read -> thread 2 terminate -> thread 1 terminate y = 1
+    - thread 2 terminate -> thread 1 terminate y = 3
+    - ![2] thread 1 terminate x=2, y=3
+    - ![3] thread 1 read -> thread 2 terminate -> thread 1 terminate: x=0, y=1
+    - !thread 1 terminate -> thread 2 terminate x=0, y=2
+    - !thread 2 terminate -> thread 1 terminate x=0, y=3
+```
