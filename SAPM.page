@@ -1,0 +1,35 @@
+---
+title: Software Architecture of the system
+...
+
+## Introduction
+
+This could include diagrams documenting the prescriptive structure of the system together with an overview of what the architecture is intended to achieve. The diagrams might consider the static, dynamic and deployment structures of the system
+
+## Systems
+
+### PX4
+
+The px4 architecture has been designed in a modular format with standardised API's between each of the components.
+
+![image alt](https://dev.px4.io/images/diagrams/PX4_Architecture.png)
+
+shown above is the architecture of the PX4 system. every box shown above is self-contained regarding code and dependencies and even during runtime. All of the arrows signify connections using the [uORB](https://dev.px4.io/advanced-uorb.html) protocol.
+
+The structure of the system allows for the modules to be replaced quickly and efficiently (even during runtime).
+
+px4 has been specifically designed to decouple the navigator. This is done by a MAVLink application that accepts MAVLink packets and converts them into uORB packets (used internally within the navigator). This is a deliberate design decision that avoids deep coupling between MAGLink and the navigator.
+The MAVLink application also works to convert uORB data-structures back into MAVLink to send back to the commander ('business logic' application).
+### References
+
+### Articles of interest
+
+- http://www.personal.psu.edu/lnl/papers/aiaa2008_0871.pdf
+- https://dev.px4.io/starting-initial-config.html
+- https://dev.px4.io/concept-architecture.html
+- https://dev.px4.io/advanced-uorb.html
+
+#### notes
+
+describe more about uORB protocol
+describe how `commander` & `navigator` are system agnostic. (others aren't).
