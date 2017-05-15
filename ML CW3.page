@@ -1,0 +1,61 @@
+---
+toc: no
+categories: uni coursework mlp
+title: Machine Learning Practical Coursework 3
+...
+
+## Introduction
+
+I based my work off the example given to us in the `09a` notebook. It is a simple neural network with a single hidden layer featuring 200 nodes. The Optimiser being used is the `AdamOptimiser`[1]. I used this as the control set.
+
+With the above mentioned network I made iterative changes to see how changes would affect the accuracy rate of the network. I only worked on the 'cifar-10' dataset as I ran out of time to run tests on the 'cifar-100' dataset.
+## Design & Rationale
+
+I took the provided neural network as the base and first decided to see how the number of layers affected the classification performance of the classifier. I then tried changing the number of hidden nodes in a layer to see whether there would be an appreciable difference in classification accuracy relative to the base classifier. I finally tried changing the Optimiser to the `AdadeltaOptimiser` to evaluate whether a different optimiser would be more efficient at classification. The results, and my evaluation of the tested classifiers performance are below.
+
+## Implementation
+
+The implementation was fairly simple, I didn't abstract anything away that hasn't already been. I simply constructed the TensorFlow graphs and ran my experiments.
+
+## Results
+
+The resulting accuracy for the base system is plotted below.
+I ran my experiments over a range of depths of neural networks ranging from 1 to 4.
+
+![](https://i.imgur.com/6jEelHJ.png)
+
+We can clearly see here that increasing the number of layers provides a significant increase in classification accuracy. 
+
+With this in mind, I will show how changing the number of nodes in the hidden layer can affect performance. We can see clearly that reducing the number of hidden nodes quite dramatically reduces the classification accuracy of the classifier.
+
+![](https://i.imgur.com/g0U1lbJ.png)
+
+Below I show the difference if we increase the number of hidden nodes to 500.
+
+![](https://i.imgur.com/YIR9nVT.png)
+
+An interesting result. The difference in classification accuracy is enormous! (93.7% compared to 77.4% in the base 3 layer classifier). At this point I didn't look further at adding more hidden nodes to the network other than a single experiment running with 3 layers and 1000 nodes per hidden layer. The results are displayed below.
+
+![](https://i.imgur.com/busl6sr.png)
+
+
+The third and final experiment that I ran was changing the `AdamOptimiser` for the `AdadeltaOptimiser`. The comparison graph is displayed below.
+
+![](https://i.imgur.com/O84lZ67.png)
+
+It is clear that there is very little appreciable increase in classification accuracy when adding more layers and using the `AdadeltaOptimiser`. In actuality the performance is consistently worse than the baseline and only improves minimally.
+
+In summary the data shows that the default `AdamOptimiser` was the most optimal (of the chosen) optimisers, and that in this case, increasing the number of nodes substansially increases the classification accuracy of the classifier.
+
+
+## Further work
+
+Further work could include measuring the training times of the different neural networks and determining an optimal training time/classification accuracy. Using the above data There seems to be a dropoff in classification accuracy between 500 and 1000 nodes. Choosing the best (3 layer 500 nodes/hidden layer) classifier I will look into data regularisation techniques to try and train a more robust and accurate classifier.
+
+
+## Note
+
+I realised too late that I had been recording accuracy and error rates for the _training_ dataset and not the _validation_ dataset. As I hadn't been saving any of the data relating to the 'valid' data (and re-running the tests would take too long) I have submitted the report as-is. The report is written under the assumption that the data being used is correct.
+## References
+
+- [1] https://www.tensorflow.org/api_docs/python/tf/train/AdamOptimizer
