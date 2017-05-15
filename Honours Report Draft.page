@@ -1,0 +1,252 @@
+---
+toc: no
+title: Honours Report
+...
+
+Interim Report
+===
+## Abstract
+Figure out how to actually do this...
+
+## Introduction
+<!--
+The Introduction chapter should always provide a 'roadmap' to the report. 
+Of course it should provide an introduction to the problem being considered, but it should also give some details of what you did - do not leave this to the conclusion. 
+You should give forward references into the rest of the report 
+- e.g., "In Chapter 2 how algorithms and heuristics are used to deal with approximate counting are discussed", "The design of the system is presented in Chapter 4", "In Chapter 3 the reasons for choosing to focus on the bounded-degree case of this problem are explained". 
+-->
+
+:::info
+This feels more like background and should probably be moved.
+:::
+Typescript is a strict superset of JavaScript adding optional static typing and class-based object-oriented programming to the language[1].
+TypeScript is a superset of JavaScript that combines type checking and static analysis. Due to the move to richer and more complex JavaScript applications being developed, programs became more complex. Several issues have become more apparent as the size of JavaScript codebases have grown. 
+TypeScript was developed for one main purpose _"getting JavaScript development to scale"_[1]. 
+The development of TypeScript and it's more powerful type system allowed for type inference (known as intellisense[2]) which previously wasn't possible in vanilla JavaScript (Maybe mention flow https://github.com/facebook/flow).
+
+TypeScript interoperability  with JavaScript is a high priority and this was designed into the language from the beginning. The approach taken was to allow for a companion file (generally having the same name with a `d.ts` extension) that describes the public interface of the JavaScript library that one wants to interact with. For example, if we look at the example JavaScript library defined below: 
+
+```javascript=
+// sample_library.js
+module.exports = {
+    i: 42,
+    object: {
+        nested: [1,2,3]
+    },
+    id: function(x) {
+        return x
+    },
+    map(f) {
+        return function(xs) {
+            return xs.map(f)
+        }
+    }
+}
+```
+
+The `d.ts` file describing the above is copied below:
+
+```typescript=
+// sample_library.d.ts
+export var i: integer
+export var object: {
+    nested: [number]
+}
+export function id(A): A
+export function map<A, B>(f:(x: A) => B): (xs: A[]) => B[]
+```
+
+The `d.ts` file above is used during compilation to describe the interface (exported properties) of the JavaScript library.
+TypeScript is a gradually typed language meaning that including types in the source code are optional and the compiler will do its best to infer types that aren't included. I include an example of the map function for completeness.
+
+```typescript=
+function map<A, B>(f:(x: A) => B) { 
+    return function (xs: A[]): B[] {
+        return xs.map(f)
+    }
+}
+```
+When the typing information is embedded in the source code the compiler can make stronger guarantees that the code is correctly typed. The above definition of the _map_ function taken as an example is correctly typed. If one were to remove the final return statement a type error would pop up at compilation time stating "A function who's declared type is neither 'void' nor 'any' must return a value". This is expected behaviour and doesn't deviate from the expected.
+
+```typescript=
+function map<A, B>(f:(x: A) => B) { 
+    return function (xs: A[]): B[] {
+    }
+}
+```
+
+I bring this up to more clearly show the distinction between types declared within TypeScript, and a `d.ts` file which describes the public interface of a 3rd party JavaScript library (explained below).
+
+A `d.ts` file is in no way verified against the JavaScript source file that it claims to represent. The only constraint for a `d.ts` file is that it is syntactically correct. This issue, further compounded by the author of the library rarely also writing the accompanying `d.ts` file means a higher degree of error and more likelihood of a divergence between the library and the `d.ts` file.
+The resource that I will be using to source `d.ts` files to compare with are contained in the DefinitelyTyped[4] repository on GitHub aiming to provide high quality definition files. This resource has 1774 different libraries containing over 100000 lines of code effective code.
+
+Using research done by Feldhaus and Moller[5] into checking the correctness of TypeScript Interfaces using static methods I have written some instrumentation that lies on the boundary between TypeScript applications and JavaScript libraries in order to perform dynamic analysis and then generate an estimate of the definition file based on the known information. Feldhaus and Moller built a tool called TSCore[6] which parses a definition file and returns a JSON equivalent representation. The purpose of the tool is to gether type information about a JavaScript library and generate a definition file that appropriately defines the JavaScript library.
+
+## Background
+## Design & Implementation
+The design of the instrumentation tool is inspired by the TypeScript:TNG project written by Jack Williams[3].
+The project was designed such that there was minimum inteference when instrumenting the library. This was done by adding a shim (in the form of a file that would wrap the underlying library) that wrapped the public interface of the JavaScript library in a Proxy. 
+
+```javascript=
+// example of a shim
+var Coverage = require('blame/coverage');
+module.exports = Coverage.wrap(require('ansicolors'), 'ansicolors');
+```
+
+The tool was split into three distinct phases, the first aggregation phase collected all of he required data as it crossed the boundary between client and library. The second analysis phase which transformed the data from the previous stage into a JSON representation of the known types of the library. The third phase, using the data from the second phase generated a definition file and printed it to stderr. For the rest of this section I will expand on each phase and explain my design decisions.
+
+The first phase wrapped the library in a Proxy.
+The Proxy was fairly simple initially, only recording the simple types of the values passed in and out of the library. Simple types are defined below:
+
+<!-- 
+definition of simple types here, as enum? 
+Is there a difference between FunctionRef and FunctionLit?... This needs to be clarified.
+currently FunctionLit doesn't seem to be referenced anywhere and should probably be stripped out.
+-->
+```typescript=
+export enum TypeEnum {
+    Integer,
+    String,
+    Boolean,
+    Object,
+    Undefined,
+    FunctionRef,
+    FunctionLit,
+    Array
+    }
+```
+
+The implementation was then expanded to wrap non-basic types in a proxy as they cross the boundary (between client/server). This captured all information, including higher order functions (and their arguments).
+
+<!-- definition of the storage structure phase 1 -->
+```typescript=
+export type ObjectMap = Immutable.Map<Name, ObjectLitType>;
+
+export type Name = string;
+
+interface Parameter {
+    type: Type
+}
+
+export type Type
+    = BuiltinType
+    | ObjectRefType
+    | ObjectLitType
+    | FunctionRefType
+    | FunctionLitType
+    | UndefinedType
+    | ArrayRefType
+    | ArrayLitType
+
+export interface BuiltinType {
+    type: BasicTypes
+    action: Action
+}
+
+interface ObjectRefType {
+    type: 'object-ref',
+    action: Action,
+    name: string
+}
+
+interface ObjectLitType {
+    type: 'object-lit',
+    properties: Immutable.Map<String, Immutable.List<Type>>
+    call?: Immutable.List<FunctionLitType>
+    }
+
+interface FunctionRefType {
+    type: 'function-ref',
+    action: Action,
+    name: string
+}
+
+export interface FunctionLitType {
+    type: 'function-lit'
+    parameters: Immutable.List<Parameter>,
+    returnType: Type
+    }
+    
+interface UndefinedType {
+    type: 'undefined'
+}
+
+interface ArrayRefType {
+    type: 'array-ref',
+    action: Action,
+    name: string
+}
+
+interface ArrayLitType {
+    type: 'array-lit',
+    internal: Immutable.List<Type>
+    }
+    
+type BasicTypes
+    = "number"
+    | "string"
+    | "boolean"
+    | "void"
+    | "any"
+    | "undefined"
+    
+enum Action {
+    Set,
+    Get,
+    Apply
+}
+
+```
+
+The structure shown above describes how the data is being stored in the first phase. As one can see, the top level type `ObjectMap` is a simple map of `Name` to `ObjectLitType`. The design was deliberately made as a depth 1 map rather than a tree. This was primarily a design decision:I was working with nested objects or functions so I wouldn't have to remember their relative paths and rather, would have an absolute unique key that maps where data is being stored.
+
+
+
+- discuss the single depth map for objects/functions (and why)
+- 
+
+## Evaluation 
+## Conclusions
+
+---
+:::info
+unfinished thoughts...
+:::
+
+- mention Feldhaus and Moller
+- disadvantages
+    - instrumentation (proxies break things)
+    - need for high-coverage test suites.
+
+:::info
+Contributions
+:::
+- Reading and understanding the original approach to analysis of JavaScript static types
+- evaluating previous code and it's suitability to new approach
+- writing instrumentation to monitor JavaScript execution and gather run-time types
+- write parser to convert gathered statistics into a d.ts file
+- [to be completed] run experiments on real libraries to evaluate non-interference
+- [to be completed] ' ' to evaluate accuracy of d.ts files as defined in https://github.com/DefinitelyTyped/DefinitelyTyped
+- [to be completed] compare and evaluate the shortcomings of the tool, and where loss of abstraction may not be able to be helped (i.e. enums, generics?, un-accessed arrays, maps)
+
+<!-- follow up comments -->
+
+---
+
+
+This paper describes a method to generate template `d.ts` files by running an instrumented library against its respective test-suite. 
+
+
+
+In Chapter 1 I will describe how I have expanded upon work by Jack Williams & Philip Wadler (Typescript TNG[3]), and extended their Typescript TNG tool. I have developed an extension which gathers the simple types (integer, string, Boolean) - passing over the boundary between application code (in this case the test-suite) and library code. 
+
+
+---
+## References
+
+- [1] [Microsoft Post on why TypeScript was developed](https://blogs.msdn.microsoft.com/somasegar/2012/10/01/typescript-javascript-development-at-application-scale/)
+- [2] [IntelliSense](https://msdn.microsoft.com/en-us/library/hcw1s69b.aspx)
+- [3] [TypeScript: The Next Generation](http://homepages.inf.ed.ac.uk/wadler/typescript-tng-proposal.pdf)
+- [4] https://github.com/DefinitelyTyped/DefinitelyTyped
+- [5] Feldthaus and Moller - _Checking  Correctness  of TypeScript  Interfaces  for  JavaScript  Libraries_
+- [6] https://github.com/asgerf/tscheck/blob/master/tscore.js
