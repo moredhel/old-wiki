@@ -21,3 +21,40 @@ I have a simple reverse proxy on each of my servers, all of them exposing an adm
 The final thing is a portacle instance which lets me monitor how much space Docker is taking up on each of the instances. It also lets me clean up any dead containers and their respective images without having to jump around
 
 [portacle](http://vps1.hamhut1066.com:9000)
+
+# Backups
+
+Backups are being done through Duply and a cron job. The script is currently not backed up (bad system admin!), but is fairly simple... I'm just gonna dump it in here as it doesn't have any important information in it...
+
+```
+#!/bin/bash
+
+# Backup of all of the things
+export AWS_ACCESS_KEY_ID="MAKE_ME_UP"
+export AWS_SECRET_ACCESS_KEY="SECRET"
+
+backup () {
+SERVICE=$1
+echo "backing up $SERVICE"
+/usr/bin/duply $SERVICE backup | echo "Duply $SERVICE"
+echo "done backing up $SERVICE"
+}
+
+
+# backup databases
+echo "backing up camino database"
+docker-compose -f /root/docker-compose/camino/docker-compose.yml exec mysql bash -c 'mysqldump -p"$MYSQL_ROOT_PASSWORD" --all-databases' > /data/docker/databases/mysql/camino.sql
+echo "backing up invoiceninja database"
+docker-compose -f /root/docker-compose/invoiceninja/docker-compose.yml exec mysql bash -c 'mysqldump -p"$MYSQL_ROOT_PASSWORD" --all-databases' > /data/docker/databases/mysql/invoiceninja.sql
+echo "backing up postgres database"
+docker-compose -f /root/docker-compose/postgres/docker-compose.yml exec postgres pg_dumpall > /data/docker/owncloud/postgres.sql
+
+backup camino
+backup wekan
+backup nextcloud
+backup databases
+```
+
+This is the script that is present on [vps2](), there is currently no script on [vps3]() as the data on there is ephemeral... [vps1]() on the other hand has a copy of the same script as above.
+
+All backups are encrypted locally before being backed up to AWS. I have used the same private key for all backups, and they are all in the same bucket... (maybe not a good idea?...) I should also probably see if it's possible to remove the private keys from the servers that are doing the backing up, but this is currently not really a priority.
