@@ -1,0 +1,12 @@
+This is a post describing my work on getting ZFS to work on Ubuntu 16.04.
+
+I have a second SSD 256gb which has been setup as a ZFS pool. There are no backups unfortunately as I cannot fit multiple harddrives into my laptop. I do however want to play with ZFS and begin to get the hang of it, hence I am using it as a test-bed.
+
+I installed ZFS with a simple `apt install zfs`, then I created a ZFS pool with `zpool create pool data /dev/sda1`.
+Now I had an expandable ssd which I could mess about with.
+
+## Permissions
+
+I'm currently messing about with permissions at the moment, but it seems that one needs to run a `chmod -R user /data/dataset` in order for a user to use the directory. This can all be done using `zfs allow 'permission'`.
+
+
