@@ -24,3 +24,38 @@ Changing the trackpad was a bit of a pain as it is the single button trackpad. I
 https://github.com/faf0/thinkpad-scripts). The README is pretty clear, and it also completely disables the trackpad which gets rid of issues when accidentally pressing your palm on it.
 
 Another issue that I have is the 'Tap to Click' function is way too sensitive, so I just disable it. I do this by simply running the following command `synclient MaxTapTime=0`, normally just in my _startup applications_ section. It works a treat, and I never have to think about it again!
+
+# Misc
+
+## Firefox
+
+I like using firefox as I can disable a considerable amount of _ring home_ functionality. I generally head over to [privacytools.io]() to configure my instance, so it's definitely worth a look.
+
+## ZFS
+
+ZFS on Linux is pretty stable nowadays, so is worth looking into. I like zfs, as can be seen on the [ZFS]() page.
+
+## Window Manager
+
+Still XMonad, I don't feel I need to qualify this, it's a marmite thing.
+XMobar is my status bar, and I'm using trayer for my applets. Trayer is a bit of a pain, but it works most of the time, and can blend in nicely with XMobar...
+
+## Private Network
+
+I have both a VPN and a CJDNS network setup to access my server cluster. I'm not sure which is better. I feel CJDNS is not really suited to what I'm trying to use it for, and will probably just start using VPN as the main access point into my server cluster.
+
+I think CJDNS would be nice to be running on a bunch of my laptops, and any servers I have as it cuts straight through NAT and is considerably easier to setup than VPN. I do have issues with reliability though, and hopefully that can be sorted out.
+
+## Programs to run
+
+### Password Manager
+
+I'm currently using Enpass, it's not hosted and it has a decent iOS app, nuff said.
+
+### GPG Keys
+
+These need to be copied onto my laptop... I'm lazy and never do this...
+
+### Backups
+
+Why am I not doing this? I _really_ need to start regularly backing up all of my data again... I have a duplicity setup with my clusters that are backing up to AWS, but I should probably look into getting it setup with my laptop...
