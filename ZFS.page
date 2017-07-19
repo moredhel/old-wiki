@@ -9,4 +9,13 @@ Now I had an expandable ssd which I could mess about with.
 
 I'm currently messing about with permissions at the moment, but it seems that one needs to run a `chmod -R user /data/dataset` in order for a user to use the directory. This can all be done using `zfs allow 'permission'`.
 
+## Comments
+
+### 1 week
+So far ZFS has been behaving very well! I have managed to setup a simple cron job which creates a snapshot of my `/data/work` partition every 24 hours, so hopefully I will struggle to accidentally delete anything of vital importance...
+
+I have found the method of creating sub-file systems pretty simple, but am still not 100% sure what the advantages are over simple creating a directory. Granted, I am not using the file system to its full capabilities, which would allow for these sub-file systems to have different properties, such as compression/dedup different backup schedules, snapshotting. But currently I am simply using `zfs create data/<dir>` as an advanced `mkdir`... I'm sure it will come in more useful when I have somewhere I can reliably backup to! I'm sure of it!
+
+I should note that it has been very stable (unsurprisingly), and I have used it with absolutely zero issues.
+
 
