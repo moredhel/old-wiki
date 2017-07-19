@@ -1,0 +1,26 @@
+I should probably note that quite a lot of this is fairly generic, and can probably be split out into a separate Wiki page. I'm not too fussed, and will optimise/refactor as and when the need arises.
+
+# Basics
+
+## Keyboard
+
+Obviously setting up Dvorak is essential, if you forget to set this up when installing the OS: `setxkbmap dvorak`.
+
+Then remapping caps lock to control is needed!
+
+
+```
+# make CapsLock behave like Ctrl:
+setxkbmap -option ctrl:nocaps
+
+# make short-pressed Ctrl behave like Escape:
+xcape -e 'Control_L=Escape'
+```
+This isn't enough though! I actually love the functionality provided by a small utility called [xcape](https://github.com/alols/xcape). So one must install it! Just running it without any options is what I do, as it will remap ctrl to a desired format by default.
+
+## Trackpad
+
+Changing the trackpad was a bit of a pain as it is the single button trackpad. I wanted the functionality of the three button trackpad, and wanted to exclusively use the Thinkpad famous TrackPoint! I found a set of scripts that that fixed these issues, they can be found on github [faf0/thinkpad-scripts](
+https://github.com/faf0/thinkpad-scripts). The README is pretty clear, and it also completely disables the trackpad which gets rid of issues when accidentally pressing your palm on it.
+
+Another issue that I have is the 'Tap to Click' function is way too sensitive, so I just disable it. I do this by simply running the following command `synclient MaxTapTime=0`, normally just in my _startup applications_ section. It works a treat, and I never have to think about it again!
