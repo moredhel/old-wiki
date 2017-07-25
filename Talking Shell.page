@@ -1,0 +1,56 @@
+While creating my asciinema video for my [https://wiki.aoeu.me/CS-ImageWolf-Kubernetes]() blog post, I thought to my self... why are all of these builds reproducible, but my shell just completely isn't. I want to be able to share what I do, or even run through a script, and have it type everything out! Demo's for everyone!!
+
+So, I decided to automate my asciinema demo! And here's how!
+
+be prepared for an anticlimax, I way over-hyped this.
+
+Essentially, the process is pretty simple:
+
+1. write a shell script with your demo code in it
+2. run my tool on your shell script
+3. ??
+4. profit
+
+Let's do it again, but together!
+
+1: let's put together a simple shell script:
+
+```
+# hello there, this is my simple shell script!
+# let's see if we can talk to google!
+ping -c 3 goo.gl
+# that seemed to work (I hope),
+# how about setting an environment variable?
+export PIZZA=good
+# let's check:
+echo $PIZZA
+# seems legit
+```
+
+2: this is pretty obvious, but, now we run my tool on what we just wrote!
+
+```
+moredhel@dolmanax:/data/src/demoer$ ./tshell.py demo.txt 
+moredhel@box:/data/src/demoer$ # hello there, this is my simple shell script!
+moredhel@box:/data/src/demoer$ # let's see if we can talk to google!
+moredhel@box:/data/src/demoer$ ping -c 3 goo.gl
+PING goo.gl (216.58.212.110) 56(84) bytes of data.
+64 bytes from lhr35s06-in-f110.1e100.net (216.58.212.110): icmp_seq=1 ttl=56 time=14.3 ms
+64 bytes from lhr35s06-in-f110.1e100.net (216.58.212.110): icmp_seq=2 ttl=56 time=11.5 ms
+64 bytes from lhr35s06-in-f110.1e100.net (216.58.212.110): icmp_seq=3 ttl=56 time=10.8 ms
+
+--- goo.gl ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2003ms
+rtt min/avg/max/mdev = 10.826/12.251/14.356/1.519 ms
+moredhel@box:/data/src/demoer$ # that seemed to work (I hope),
+moredhel@box:/data/src/demoer$ # how about setting an environment variable?
+moredhel@box:/data/src/demoer$ export PIZZA=good
+moredhel@box:/data/src/demoer$ # let's check:
+moredhel@box:/data/src/demoer$ echo $PIZZA
+good
+moredhel@box:/data/src/demoer$ # seems legit
+```
+
+Now we can have reproducible, and demo-able scripts! for free!!
+
+Maybe someone will find a use for this! but it was entertaining to build, and extremely hacky! It may come in useful though! It already has for me!
