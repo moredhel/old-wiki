@@ -1,0 +1,20 @@
+For the past couple of days I've been working on converting [ImageWolf](https://github.com/ContainerSolutions/ImageWolf) to support Kubernetes as well as Docker Swarm. Halfway through, I was very kindly helped out by **@etiennetremel** (present on GitHub), who worked on the routing and service creation.
+
+When I first started looking at this project, it was built using an ad-hoc build script which strung together several Dockerfiles. Granted, this was the standard way to build a Lean Docker Container if one wanted to exclude all build dependencies. If you want to know more about it, then Cyle Riggs goes into more detail in his blog post about [Lean Go Containers](https://container-solutions.com/lean-go-containers-multi-stage-dockerfiles/).
+
+I spent the majority of the first day staring at weird compilation bugs that go kept throwing at me. Adrian and I eventually narrowed it down to a C library which was failing to compile. In the end, we moved back to the original `golang:1.7` official image from the hub, and rewrote the build instructions! luckily pretty easy for a go project! Let's have a quick look at this section:
+
+```
+FROM golang:1.7 AS build
+
+RUN go get github.com/anacrolix/utp
+RUN go get github.com/anacrolix/torrent/
+RUN go get github.com/docker/distribution/notifications
+COPY src/imagewolf.go /go/src/
+RUN CGO_ENABLED=0 go build -a /go/src/imagewolf.go
+```
+
+Pretty straight forward, grab some dependencies then build the binary. Technically we should have a dependency
+
+The second step is that we needed to include Docker into the binary. I was hesitant to include the official `docker` container, as it seemed a little overkill for only needing the client, so I opted to take the redis approach and download an official static binary. This does add some overhead on our part, but does *significantly* reduce the image size. I grabbed the latest `alpine` image, and used this environment to download and verify the docker static binary. We use the alpine image as another build step to reduce the files present in the final deployed image.
+
