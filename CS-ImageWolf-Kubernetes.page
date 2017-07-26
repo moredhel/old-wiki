@@ -26,7 +26,7 @@ We already know the bottleneck that we're trying to get around.
 
 At this point, we have a fairly clear idea of the high level idea of this project. When a new Image is pushed to the repository, ImageWolf downloads it automatically then seeds it to all other nodes in the cluster.
 
-Now, when we trigger the deploy, rather than every server has already got the image it is going to deploy locally, in cache! That is just about the best we can hope for! Start up time has been reduced quite considerably (we're talking up to 26x reduction in rollout speed!)
+Now, when we trigger the deploy, every server has already got the image it is going to deploy locally, in cache! That is just about the best we can hope for! Start up time has been reduced quite considerably (we're talking up to 26x reduction in rollout speed!)
 
 I have some numbers with me (not very scientific, granted, but pretty good), of running this on Kubernetes (I forgot to time Swarm)! The difference in startup performance is pretty pronounced!
 
@@ -61,6 +61,6 @@ user 0.16
 sys 0.00
 ```
 
-That is a pretty big number! And we're only deploying to 3 nodes! This will just get worse as more nodes are added to the cluster! I think that is a pretty big reason to give it a try! go, try it out, be amazed! come back when you break it (because I want to make it better!).
+That is a pretty big number! And we're only deploying to 3 nodes! This will just get worse as more nodes are added to the cluster! Give it a try! be amazed! come back when you break it (because I want to make it better!).
 
 TLDR; we used BitTorrent for something! [https://github.com/ContainerSolutions/ImageWolf]()
