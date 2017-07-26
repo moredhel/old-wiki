@@ -1,6 +1,6 @@
 ImageWolf now has support for Kubernetes! We even made a video (see below)! If you want to see the code though, you can find it in its [normal place](https://github.com/ContainerSolutions/ImageWolf).
 
-[![asciicast](https://asciinema.org/a/01rQtDxr67y4Gtu85KpBJ9cz2.png)](https://asciinema.org/a/01rQtDxr67y4Gtu85KpBJ9cz2)
+<a href="https://asciinema.org/a/01rQtDxr67y4Gtu85KpBJ9cz2" target="_blank"><img src="https://asciinema.org/a/01rQtDxr67y4Gtu85KpBJ9cz2.png" width="100%"/></a>
 
 That's great! but what is it? I'm glad you asked! Essentially, it's a service that aims to alleviate bottlenecks when deploying a new application over a cluster by leveraging the distributed BitTorrent protocol. That's quite a mouthful, so let's unpack it!
 
