@@ -1,3 +1,5 @@
+**Note**: *Below is an initial draft of a blog post done for ContainerSolutions, The original can be found there:* [http://container-solutions.com/kubernetes-comes-imagewolf/]()
+
 ImageWolf now has support for Kubernetes! We even made a video (see below)! If you want to see the code though, you can find it in its [normal place](https://github.com/ContainerSolutions/ImageWolf).
 
 <a href="https://asciinema.org/a/01rQtDxr67y4Gtu85KpBJ9cz2" target="_blank"><img src="https://asciinema.org/a/01rQtDxr67y4Gtu85KpBJ9cz2.png" width="50%"/></a>
