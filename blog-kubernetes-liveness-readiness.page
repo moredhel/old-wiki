@@ -3,4 +3,35 @@ title: Readiness and Liveness in Kubernetes
 toc: no
 ...
 
-After teaching two training courses for 
+After teaching two training courses for ContainerSolutions on Kubernetes, I feel like I can comment on some of the more harder to grok concepts within the Kubernetes ecosystem. First a disclaimer though, I am by no means an expert in the Kubernetes world, I am closer to a fledgling who has been thrown out of the nest and have somehow saved myself before meeting a quick and painful death.
+
+What are Liveness and Readiness in Kubernetes? And why do we need two things? We already have health-checks. All good questions, all shall be answered.
+
+## Health Checks
+
+Let's start with what we know. A health-check is simply a method of verifying that the core functionality of a service is still functional. They can be implemented in any way, http endpoint, sending emails, a [blinking light](https://github.com/fabrik42/traffic-light-server). All are valid. Essentially what we want is a way to quickly know the health of our service.
+
+In the past, services used to start up slowly, and hang about for a fairly long time before being replaced. As the whole process was pretty manual (and let's be honest, it's still pretty manual in most companies) we failed to notice that a health check is not really describing the whole health of the service but only one aspect of it the readiness.
+
+## Readiness
+
+What is readiness? Readiness, quite simply, is reached when a service is _ready_ to serve traffic. This is a binary state, it either is or it isn't, there will be no debate. Essentially, the service is saying, if you send me traffic it is on your head. You may notice that this is somewhat different to the health-check, as traditionally we would monitor a new deployment until we manually verified that it was ready to start working before flipping the switch.
+
+In the world of Kubernetes though, we don't want to have to manually sit there and wait until we know our service is ready to start receiving traffic. Wouldn't it be great if we could just specify within our service what state we need to be in order to serve traffic, and if that state is not reached, we just say we aren't ready. Pretty simple. But this can go one step further. What if we were ready, and then another service we depend on goes down, now we can't do anything anymore. We could crash horribly and get the developer out of bed, or we could simply take ourselves out of rotation until what we need is back. This is what readiness is, it's a switch which allows a service to pull out of serving traffic if something goes wrong, if it believes that it can recover. This brings us nicely to liveness.
+
+## Liveness
+
+Liveness is the part that we always did ourselves. We want to deploy our application, but we don't really care how it does it as long as it starts up. How do we know it has started? With liveness checks. Our application needs a way to specify that it is alive, a bit like a heartbeat. It needs to convince its supervisor that it is working towards being ready to do its job. And that is what the liveness check is for. If for some reason the liveness check fails, then the service is essentially saying, I am broken. I am in a state where I have no idea how to recover. The best option right now is to put me out of my misery and try again.
+
+
+## Kubernetes
+
+Let's tie this into how Kubernetes interprets the two pieces of information. With the first readiness check, Kubernetes will not route traffic to it. It will treat it as a child preparing for the real world, giving it space to grow and mature until it is ready to join the workforce. Liveness however refers to the well... liveness of the service. Does this service have any chance whatsoever of serving traffic? no? in that case, we must make the necessary sacrifice. I'm gonna write it out one more time, just to be super clear:
+
+Kubernetes reactions when these things fail:
+
+- Readiness: Don't route traffic
+- Liveness: Kill and create a new instance
+
+There has been a lot of back and forth about the exact semantics of the readiness/liveness checks internally, even questioning whether an HTTP endpoint is the best method for doing this. I'm currently of the opinion that this is the easiest method of implementing it, and sometimes the easiest way is the best.
+If nothing else, the important take-away is that Kubernetes has split what used to be an overloaded check into two checks that allow finer-grained control of the state of a service.
