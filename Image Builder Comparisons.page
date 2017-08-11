@@ -1,0 +1,21 @@
+Following the release of the Docker [multi-stage builds](https://blog.docker.com/2017/07/multi-stage-builds/) I suddenly became interested in alternative Image creation tools to see if their core ideas had been undermined or whether, perhaps, they offered an additional something which could not be offered by the vanilla Docker build flow.
+
+After trawling around and asking a few people for ideas of where to look, I came across a few different build tools. I list the tools below, If you want to skip a section, I won't be offended.
+
+## Docker
+
+I'll start with the most common build tool. This is supported everywhere. We all know what it does, and we all get how it works. The idea behind the configuration file is that it forces some semantics when it comes to building containers. The main, and probably most important, thing that it enforces is a 'pure' environment. An interesting thing to note is that setting build-time variables was not allowed in the initial versions of Docker and was only included in version 1.7, over a year after the initial release into open-source. This is indicative of an underpowered definition file. 
+
+The idea behind the Dockerfile is that with a reduced set of commands one can increase build times by caching previously run commands as it assumes that each command is somewhat side-effect free. This isn't actually the case though, and can cause issues with users who aren't aware of the caching properties of the Docker ecosystem and end up running old/insecure code running in production. This is a fairly serious problem that should probably be made more clear and explicit.
+
+Back to Build Arguments, when they were introduced there were only allowed to be used in certain contexts. One context where these variables were not allowed to be used is in the `FROM` statement. There is controversy around this too, as people believe that it should be possible to allow for variable `FROM` statements [Github Issue](https://github.com/moby/moby/issues/18119).
+
+With this in mind, I started a search into the other tools to see how they had approached some of these issues.
+
+## Buildah
+
+## Smith
+
+## Box
+
+## Nix
