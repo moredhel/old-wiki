@@ -44,6 +44,18 @@ they had approached some of these issues.
 
 Project seg-faulted, then when I installed a VM the FS corrupted...
 
+This project is similar to
+the [acbuild](https://github.com/containers/build) tool that was
+developed for creating aci or oci images. This tool deviates from
+acbuild in that it doesn't create a scratch directory in the local
+directory but rather creates a scratch container which it builds up
+before committing it and pushing it to the desired location.
+
+This allows for easily rolling custom bash scripts and easily
+integrating that into any work-flows that already exist. What this
+tool allows, that other tools do not is out-of-band work to be done
+partway through a build.
+
 ## Smith
 
 This tool is primarily aimed at wrapping up an RPM into a lightweight
@@ -55,6 +67,14 @@ a primary focus. Integration works fine, and the images created are
 consistently smaller than those created even with Alpine Linux. If
 saving some space on the wire is a design goal, then Smith really has
 your back. Although this can also be achieved using a standard docker build.
+
+Integration with Docker is a little challenging in that in order to
+run a generated image one must first push it through a registry. The
+reason being that Smith generates OCI images and Docker cannot load
+them in from disk.
+
+There is no cache for Smith, but as it is doing a slightly different
+thing, the lack of a cache doesn't mean too much.
 
 ## Box
 
@@ -76,6 +96,13 @@ mvn "dependency:copy-dependencies"
 
 This is a simple augmentation of the language which allows for a more
 natural reading experience and more powerful build files.
+
+Box has great integration with Docker and actually automatically loads
+images into the docker local instance after a successful build. In
+terms of preserving the cache Box, just like Dockerfile's, have a poor
+cache. It is hard to write a package which will just work. In fact,
+the Dockerfile caching mechanism is better, at the cost of insecurity
+(mentioned in the first section).
 
 ## Nix
 
