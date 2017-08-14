@@ -32,3 +32,6 @@ Back to the level of the cache though, it would probably be good to
 have a single cache shared within a local network. One wants to cache
 on an internal network, and not have to rely on potential
 contention/rate-limiting (DockerHub doing it's thing).
+
+__Note:__ With regards to Kubernetes, it would be easy to spin up a
+registry: https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/registry
