@@ -1,0 +1,34 @@
+During our Meeting today, we were thinking about different methods of
+solving the problem that ImageWolf is trying to solve. We were
+throwing around ideas, and thought maybe a simple transparent proxy
+would do a decent job. This is especially the case when pulling from
+the DockerHub (see my [previous](#TODO) post for more details).
+
+I have tried this by using Squid as a pass-through transparent proxy,
+but was unsuccessful. As the whole process uses HTTPS, one would
+probably need to use some mild MITM (a la cloudflare) in order to
+properly cache the image layers as they came in. One would probably
+need one/two layers of these depending on how large your cluster is,
+the advantage would be that one could transparently add another layer
+if ones' cluster outgrew the cache layer.
+
+The 'level' at where the cache needs to be needs to be thought about
+though. It would be rather pointless to be running these at the
+node-level as we would just be duplicating the space requirements for
+each docker pull, and docker already does a magnificent job of
+caching.
+
+One option which we haven't really explored is running a private
+pull-through registry on each node and then using the ImageWolf
+infrastructure to distribute and populate it. This is slightly
+different as it requires an active distribution mechanism. This will
+also essentially double the space requirements for each node. 
+
+The above can also be achieved through using a distribution method to
+share the proxy cache... also something worth considering.
+
+
+Back to the level of the cache though, it would probably be good to
+have a single cache shared within a local network. One wants to cache
+on an internal network, and not have to rely on potential
+contention/rate-limiting (DockerHub doing it's thing).

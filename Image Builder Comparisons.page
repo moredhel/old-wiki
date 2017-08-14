@@ -104,6 +104,9 @@ cache. It is hard to write a package which will just work. In fact,
 the Dockerfile caching mechanism is better, at the cost of insecurity
 (mentioned in the first section).
 
+Perhaps mention the issues with getting carts to build from an ubuntu
+base image and subsequent success when moving to Alpine...
+
 ## Nix
 
 Todo...
