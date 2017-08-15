@@ -1,0 +1,27 @@
+This serves as a living document of the aims of ImageWolf.
+
+This is a link to a talk by a google engineer talking about
+distribution of large files over a large network.
+
+https://www.usenix.org/sites/default/files/conference/protected-files/lisa_2014_talk.pdf
+
+The presentation talks about splitting package distribution into two
+parts, metadata and data. The metadata is distributed quickly through
+a central medium (BigTable database), whereas the docker images are
+distributed through a slower medium (Colossus File-System).
+
+This is similar to the ImageWolf issue. We now have access to many
+hundreds of nodes (potentially) and wish to distribute updates quickly
+and efficiently to all/some specified subset of nodes.
+
+ImageWolf is a push-based system, although implementing pull would not
+be too challenging. Currently only one ImageWolf instance is notified
+when a new image needs to be distributed between all instances.
+
+When this happens ImageWolf downloads the image from the registry and
+then distributes it to all nodes using BitTorrent.
+Currently there is zero filtering on which nodes should be sent the
+image.
+
+There is already logic within Kubernetes to help with cache-locality
+(#20140)[https://github.com/kubernetes/kubernetes/pull/20140].
