@@ -79,5 +79,57 @@ security standards.
 
 __Immutable Images:__ Once an image has been pushed, it may not be
 'patched', If an image is tagged in a registry, then the tag cannot be
-moved... (Is this desired functionality?). It should not be possible
-to overwrite tags, perhaps with a `-f` command-line switch!
+moved... (Is this desired functionality?, for sure!). It should not be
+possible to overwrite tags, perhaps with a `-f` command-line switch!
+
+__Disable access to DockerHub:__ This is an important requirement for
+projects with strict requirements on ingress/egress from nodes. Having
+a method to restrict which registries are considered 'acceptable', or
+even disabling `docker pull` altogether would be reasonable. It is
+currently possible to specify a pull policy for a container, but not
+over a namespace, or even a cluster. This might be necessary in order
+to enforce no fallback to the docker registry.
+
+Original discussion
+https://github.com/kubernetes/kubernetes/issues/1319
+Follow up discussion around the addon for k8s.
+https://github.com/kubernetes/kubernetes/issues/19033
+
+## Alternatives
+
+### GCE cache of Dockerhub.
+
+This can only be done when setting-up/reconfiguring the entire
+cluster.
+[#2592](https://github.com/kubernetes/kubernetes/pull/2592)
+shows how one can use the GCE cache to pull images much faster than
+falling back to the Dockerhub. This is pretty intrusive though, and
+doesn't allow for an easy win. This is however very robust as you
+don't need to maintain anything else. If you are setting up on Google
+Infra, it's probably worth it.
+
+### Squid-in-a-can
+
+Pretty basic, couldn't get it working.
+
+
+### People who may be interested in ImageWolf
+
+- https://twitter.com/cognitiaclaeves
+
+
+## Potential Solutions
+
+# Registry per node
+
+Explains itself, there are different ways that this can be done...
+Each different alternative needs to be described in more detail
+Distribution methods (P2P, Block Storage, others?)
+
+# One Registry on Master node
+
+Discuss...
+
+# No pulling, only _docker load_
+
+Discuss...
