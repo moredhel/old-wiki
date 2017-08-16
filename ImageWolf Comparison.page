@@ -25,3 +25,59 @@ image.
 
 There is already logic within Kubernetes to help with cache-locality
 (#20140)[https://github.com/kubernetes/kubernetes/pull/20140].
+
+With a method to 'prefetch' images one would be able to exploit this,
+rolling out to machines which managed to get a hold of the newly
+deployed image first. This is not currently supported, but ImageWolf
+could be used to solve the problem:
+https://github.com/kubernetes/kubernetes/issues/16466
+
+One of the solutions discussed was p2p sharing, which is actually the
+solution used in MTM (see slides above) within google for package
+distribution.
+
+An interesting discussion on the limitations of Docker
+configurability:
+
+https://github.com/kubernetes/kubernetes/issues/1319
+
+
+Something like this:
+https://github.com/jpetazzo/squid-in-a-can.git
+
+might do a decent job...
+
+## What is needed for a private Image registry
+
+__Out of band Image pulls:__ As seen
+in [#43915](https://github.com/kubernetes/kubernetes/issues/43915)
+if image pulls become slow, then issues start occurring with the
+Docker daemon stability. This should not be the case, and can be
+fixed by not having the image pull be a central process in the image
+deployment lifecycle. As this is currently not possible to resolve
+directly, one solution is to point the docker daemon at a closer
+caching registry which fails if the image is not available. This
+reduces the mean time to error and reducing the load on the Docker
+daemon.
+
+__Pre-warming of local registry's:__ A cold pull from the Docker hub
+can be a slow process, especially when deploying over many hundreds of
+machines. One solution to this problem is to optimistically move new
+data into the cache that we think may be used in the near future.
+
+__Only audited/signed images:__ When pulling from the Docker hub, the
+quality of images is pretty variable. There is currently no way to
+verify that a pulled image was created by the owning party. In a way,
+we have moved back to pulling and executing random binaries from
+public ftp servers. This is a feature offered by the 'Enterprise
+facing' tools that currently exist.
+
+__Fine-grained access control:__ Have fine-grained access control from
+nodes, perhaps enforcing specific requirements before nodes may access
+images. Useful for financial institutions which must conform to higher
+security standards.
+
+__Immutable Images:__ Once an image has been pushed, it may not be
+'patched', If an image is tagged in a registry, then the tag cannot be
+moved... (Is this desired functionality?). It should not be possible
+to overwrite tags, perhaps with a `-f` command-line switch!
