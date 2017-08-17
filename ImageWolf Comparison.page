@@ -1,9 +1,11 @@
 This serves as a living document of the aims of ImageWolf.
 
+## Introduction & Resources
+
 This is a link to a talk by a google engineer talking about
 distribution of large files over a large network.
 
-https://www.usenix.org/sites/default/files/conference/protected-files/lisa_2014_talk.pdf
+[https://www.usenix.org/sites/default/files/conference/protected-files/lisa_2014_talk.pdf]()
 
 The presentation talks about splitting package distribution into two
 parts, metadata and data. The metadata is distributed quickly through
@@ -24,13 +26,13 @@ Currently there is zero filtering on which nodes should be sent the
 image.
 
 There is already logic within Kubernetes to help with cache-locality
-(#20140)[https://github.com/kubernetes/kubernetes/pull/20140].
+[#20140](https://github.com/kubernetes/kubernetes/pull/20140).
 
 With a method to 'prefetch' images one would be able to exploit this,
 rolling out to machines which managed to get a hold of the newly
 deployed image first. This is not currently supported, but ImageWolf
 could be used to solve the problem:
-https://github.com/kubernetes/kubernetes/issues/16466
+[#16466](https://github.com/kubernetes/kubernetes/issues/16466)
 
 One of the solutions discussed was p2p sharing, which is actually the
 solution used in MTM (see slides above) within google for package
@@ -39,11 +41,11 @@ distribution.
 An interesting discussion on the limitations of Docker
 configurability:
 
-https://github.com/kubernetes/kubernetes/issues/1319
+[#1319](https://github.com/kubernetes/kubernetes/issues/1319)
 
 
 Something like this:
-https://github.com/jpetazzo/squid-in-a-can.git
+[squid-in-a-can](https://github.com/jpetazzo/squid-in-a-can.git)
 
 might do a decent job...
 
@@ -91,12 +93,12 @@ over a namespace, or even a cluster. This might be necessary in order
 to enforce no fallback to the docker registry.
 
 Original discussion
-https://github.com/kubernetes/kubernetes/issues/1319
+[#1319](https://github.com/kubernetes/kubernetes/issues/1319)
 
 Follow up discussion around the addon for k8s. This one is pretty
 interesting as it explicitly is discussing what would be wanted in a
 registry.
-https://github.com/kubernetes/kubernetes/issues/19033
+[#19033](https://github.com/kubernetes/kubernetes/issues/19033)
 
 ## Alternatives
 
