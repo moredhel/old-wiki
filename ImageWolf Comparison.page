@@ -66,6 +66,8 @@ __Pre-warming of local registry's:__ A cold pull from the Docker hub
 can be a slow process, especially when deploying over many hundreds of
 machines. One solution to this problem is to optimistically move new
 data into the cache that we think may be used in the near future.
+[#1431](https://github.com/docker/distribution/issues/1431)
+
 
 __Only audited/signed images:__ When pulling from the Docker hub, the
 quality of images is pretty variable. There is currently no way to
@@ -83,6 +85,7 @@ __Immutable Images:__ Once an image has been pushed, it may not be
 'patched', If an image is tagged in a registry, then the tag cannot be
 moved... (Is this desired functionality?, for sure!). It should not be
 possible to overwrite tags, perhaps with a `-f` command-line switch!
+[#2301](https://github.com/docker/distribution/issues/2301)
 
 __Disable access to DockerHub:__ This is an important requirement for
 projects with strict requirements on ingress/egress from nodes. Having
@@ -91,6 +94,7 @@ even disabling `docker pull` altogether would be reasonable. It is
 currently possible to specify a pull policy for a container, but not
 over a namespace, or even a cluster. This might be necessary in order
 to enforce no fallback to the docker registry.
+[#34319](https://github.com/moby/moby/pull/34319)
 
 Original discussion
 [#1319](https://github.com/kubernetes/kubernetes/issues/1319)
@@ -118,7 +122,7 @@ Infra, it's probably worth it.
 Pretty basic, couldn't get it working.
 
 
-### People who may be interested in ImageWolf
+## People who may be interested in ImageWolf
 
 - https://twitter.com/cognitiaclaeves
 - https://www.clarifai.com/
@@ -126,16 +130,30 @@ Pretty basic, couldn't get it working.
 
 ## Potential Solutions
 
-# Registry per node
+### Registry per node
 
 Explains itself, there are different ways that this can be done...
 Each different alternative needs to be described in more detail
 Distribution methods (P2P, Block Storage, others?)
 
-# One Registry on Master node
+### One Registry on Master node
 
 Discuss...
 
-# No pulling, only _docker load_
+### No pulling, only _docker load_
 
 Discuss...
+
+### Use new PR for local caching.
+
+There is a new PR that is being
+discussed [here](https://github.com/moby/moby/pull/34319)
+which may change how Enterprise Docker users use docker.
+Don't get me wrong, there are still some really annoying issues with
+implementation that need to be fixed. Things that really just
+shouldn't be in there.
+
+The solution allows one to define a mirror for a private
+repository. This completely changes how things work, now it is
+possible to have a local mirror/cache. This may work pretty well for
+our purposes. We will need to investigate further though...
