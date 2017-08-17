@@ -92,7 +92,10 @@ to enforce no fallback to the docker registry.
 
 Original discussion
 https://github.com/kubernetes/kubernetes/issues/1319
-Follow up discussion around the addon for k8s.
+
+Follow up discussion around the addon for k8s. This one is pretty
+interesting as it explicitly is discussing what would be wanted in a
+registry.
 https://github.com/kubernetes/kubernetes/issues/19033
 
 ## Alternatives
@@ -116,6 +119,7 @@ Pretty basic, couldn't get it working.
 ### People who may be interested in ImageWolf
 
 - https://twitter.com/cognitiaclaeves
+- https://www.clarifai.com/
 
 
 ## Potential Solutions
