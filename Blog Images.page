@@ -1,0 +1,245 @@
+## Introduction
+
+I have spent the last week looking into alternative Image
+builders. This was inspired by the release of the
+[multi-stage
+build](https://blog.docker.com/2017/07/multi-stage-builds/) recently
+incorporated into the vanilla Docker build process. I have looked into
+several different methods for packaging and building OCI (or Docker)
+images. Each tool has interesting ideas that bring both benefits and
+drawbacks to the table. Without further ado, let me dive into the
+different options.
+
+## Multi-Stage Dockerfile
+
+The community has waited quite a long time to be able to essentially
+_squash_ images without blowing the cache every build or having to
+revert to build-scripts. I won't go into much detail about this, as it
+has been covered pretty comprehensively in
+this
+[blog post](http://container-solutions.com/lean-go-containers-multi-stage-dockerfiles/) by
+Cyle Riggs.
+I will instead focus on some of the drawbacks of the Dockerfile. The
+first issue is the somewhat naive caching mechanism which checks for a
+change in the command string then decides whether or not to utilise
+the cache. This can be an issue in both directions, If the command is
+something like `apk update` Important updates could be missed as the
+Dockerfile will just use the cache. On the other side if one were to
+fix a white-space issue, that busts the cache and everything will need
+to be rebuilt.
+
+I decided to have a two-stage system for each build tool. First, I
+would create a simple hello-world Nodejs program. The motivation for a
+simple first task was to firstly check the tool was working correctly,
+but also to see how simple it was for my understanding to be mapped
+into the context of the tool.
+
+With the simple setup I wanted to see if I could build a really light
+image without too much effort. I always started from the same base
+image so that each tool would have the same basis from which to start.
+
+The contents of the directory are only the _hello.js_ file and the
+_Dockerfile_ needed to package it.
+
+```
+from "alpine"
+
+RUN apk update
+
+RUN apk --no-cache add nodejs
+
+ADD index.js .
+
+
+CMD node /index.js
+```
+
+Fairly simple, weighing in at 28.1Mb. I then moved on to the _carts_
+service in the [microservices-demo](https://microservices-demo.github.io/).
+I wanted to test how effective a multi-stage build would hold up
+against the other options out there, so I rewrote the Dockerfile to be
+slightly more light-weight.
+
+```
+FROM maven:3.2-jdk-8 as build
+
+VOLUME /root/.m2
+WORKDIR /usr/src/mymaven
+COPY pom.xml ./
+
+RUN mvn dependency:copy-dependencies
+
+COPY . /usr/src/mymaven
+RUN mvn -DskipTests package
+
+FROM java:openjdk-8-alpine
+
+WORKDIR /usr/src/app
+COPY --from=build /usr/src/mymaven/target/carts.jar ./carts.jar
+
+ENTRYPOINT
+["java","-Djava.security.egd=file:/dev/urandom","-jar","./carts.jar", "--port=80"]
+```
+
+This weighed in at a cool 669Mb.
+
+I should note at this point that one of the reasons the build-cache
+can break so easily is because of the files that are copied into the
+container. An example would be the Dockerfile itself, chances are that
+it is being copied into the container. This is fine normally but when
+one is building the Dockerfile things can go wrong as the cache will
+be busted every time. The solution to this is to use a _.dockerignore_
+file which specifies which files should be ignored from the build-context.
+
+All this is pretty familiar so far, images can weigh a fair amount and
+we can't do too much about it...
+
+## Buildah
+
+## Smith
+
+[Smith](https://github.com/oracle/smith) is an interesting tool. It
+came out of Oracle and claims to be a builder of microcontainers. When
+I initially started working with it, I thought of it as a replacement
+or alternative to the Docker build process, I asked
+for [clarification](https://github.com/oracle/smith/issues/15) on the
+aims of Smith, as well as if there exists any documentation.
+
+It was at this point that I discovered where Smith fits into the
+picture. It isn't really a build tool, but rather a tool for
+extracting out the essence of a container. Smith, true to its word
+does create containers which are consistently smaller than the
+containers built by Docker build. When it comes to the multi-stage
+build though, the improvements are not nearly as pronounced. I need to
+mention that Smith was not initially designed how I use it. The main
+selling point of Smith is the containerisation of rpm packages. I
+cannot comment on it though as I never used the tool in that context.
+
+On to some examples.
+
+```
+type: oci
+package: https://registry-1.docker.io/library/node
+paths:
+  - /usr/local/bin/node
+cmd:
+  - /usr/local/bin/node
+  - /read/index.js
+```
+
+This is a pretty minimal description of what is necessary. Going
+through this one line at a time, we state the type of image that we
+are going to derive from, we then state the location of the image we
+wish to use as the base. The _paths_ list describes everything in the
+base image which we would like to copy over to the new image. What is
+interesting to note is that we don't need to specify all of the
+dependencies of _node_, they are picked up automatically:
+
+```
+...
+lib/x86_64-linux-gnu/
+lib/x86_64-linux-gnu/ld-2.19.so
+lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+lib/x86_64-linux-gnu/libc-2.19.so
+lib/x86_64-linux-gnu/libc.so.6
+lib/x86_64-linux-gnu/libdl-2.19.so
+lib/x86_64-linux-gnu/libdl.so.2
+lib/x86_64-linux-gnu/libgcc_s.so.1
+lib/x86_64-linux-gnu/libm-2.19.so
+lib/x86_64-linux-gnu/libm.so.6
+lib/x86_64-linux-gnu/libpthread-2.19.so
+lib/x86_64-linux-gnu/libpthread.so.0
+lib/x86_64-linux-gnu/librt-2.19.so
+lib/x86_64-linux-gnu/librt.so.1
+lib64/
+lib64/ld-linux-x86-64.so.2
+...
+read/index.js
+...
+usr/lib/x86_64-linux-gnu/
+usr/lib/x86_64-linux-gnu/libstdc++.so.6
+usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.20
+...
+usr/local/bin/node
+write/
+```
+
+This is a pretty nifty feature, as we don't need to list everything
+that should be in the container, we can simply state "_X_, and all of
+its dependencies".
+
+The particularly perceptive among you will notice that there is no
+specification for adding the 'index.js', this is because Smith will
+search the current directory for a subdirectory called rootfs. Any
+files in that directory will be copied wholesale into the container.
+
+This particular solution when bundling up the _carts_ micro-service
+weighs in at a respectable 86M. The _smith.yaml_ file for this is show
+below:
+
+```
+type: oci
+package: base.tar.gz
+dir: "/"
+paths:
+  - /usr/src/mymaven/target/carts.jar
+  - /usr/lib/jvm/java-1.8-openjdk/
+  - /usr/bin/java
+cmd:
+  - /usr/bin/java
+  - -Djava.security.egd=file:/dev/urandom
+  - -Djava.io.tmpdir=/write
+  - -jar
+  - /usr/src/mymaven/target/carts.jar
+  - --port=8080
+```
+
+You'll notice that there is no information regarding how to compile
+the Java, or cleaning up install information. This is where it becomes
+more clear that Smith is not a build tool, there is no way to run
+arbitrary commands within a container. The way I solved this is to
+install all dependencies and build the _.jar_ using _box_, then
+exporting the image into a _.tar.gz_ then using that.
+
+<!-- potentially split out below into a separate post -->
+
+## Box
+
+We now get to the tools which describe the build process using a
+general-purpose programming language. Box
+uses [embedded ruby](http://mruby.org/) in a sandbox to describe an
+image build process. This has some really interesting potential for
+abstraction and knowledge sharing for build processes.
+
+Starting with the hello-world image:
+
+```
+from "alpine"
+
+date = Time.new
+mytag = "#{date.year}#{date.month}#{date.day}"
+
+run "apk update"
+run "apk --no-cache add nodejs"
+
+copy "index.js", "/"
+
+set_exec entrypoint: ["node"], cmd: ["index.js"]
+tag "hello_world:#{mytag}"
+
+```
+
+This looks very similar to the vanilla Dockerfile.
+There are only a few augmentations, namely we have access to the whole
+of the mruby standard library. We are able to build our docker image
+and tag it with the day that it was built. All of this is defined
+within the build script. The use of a fully fledged programming
+language in the context of a build system was deliberately left out of
+the Docker build system to reduce complexity. This has some
+interesting side-effects such as Docker now being the gatekeepers of
+any new functionality, people using Dockerfiles in very unnatural ways
+in order to get desired behaviour or people
+wholesale [forking](https://github.com/grammarly/rocker) and extending
+the base idea. 
+
+## Nix
