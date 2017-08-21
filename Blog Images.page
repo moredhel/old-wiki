@@ -242,4 +242,11 @@ in order to get desired behaviour or people
 wholesale [forking](https://github.com/grammarly/rocker) and extending
 the base idea. 
 
+One interesting 'administrator' function that box allows is to disable
+certain instructions. Say the admin does not want developers to
+execute random code in the container, then that is possible by simply
+disabling the `run` verb.
+
 ## Nix
+
+Need to consider whether it is worth any time to put into this...

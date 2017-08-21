@@ -1,0 +1,62 @@
+I previously wrote a blog on the different Image tools that are
+available, if you haven't read it yet, you can find it [here](Blog Images).
+
+When I was writing up the last post I spend a fair amount of time with
+Adrian figuring out what kind of things I would want in my perfect
+build tool. I'm not going to go into too much detail around each of
+the build tools as I had a pretty good go at that in my last post.
+
+
+So without further ado, my wish-list (in no particular order):
+
+- __Repeatable__: Pretty much every build system has this, so there
+  isn't too much I can say about this.
+  If someone else can't build it, then what is the point.
+
+- __Fast__: This one is a little vague as it catches a few things, The
+  primary thing meant by this is an effective caching system. A single
+  company can sometimes be building thousands of images per day, Some of
+  these companies don't trust the cache, so whenever they build an
+  image, it must be rebuilt from scratch wasting hours of time.
+  Box does better in regards to caching simply because the caching layer
+  is not a function of the contents of the file, but rather the
+  operations that construct it.
+
+- __Minimal__: Bloat can be a huge problem, especially when network
+  costs can be so high. It is beneficial if extra utilities, such as
+  build dependencies, can be stripped out of the image. Docker has
+  come up with multi-stage builds whereas Box has separate
+  functionality using `skip` blocks.
+
+- __Secure__: There should be a way to verify that images that are
+  depended on are owned by the original author and contain the
+  advertised content.
+
+- __Programmable__: Having a powerful build tool is essential, we can
+  see this from the continuing presence of the `Makefile`. It is very
+  useful to be able to create abstractions and variables which may
+  modify the functionality and ultimate outcome of the build. The
+  Dockerfile does not have this, yet people still want it, so it is
+  done. Rather, the option for being able to manipulate these things
+  should be allowed, possibly with the option to disable certain
+  instructions (see Box in the previous post).
+
+- __Declarative__: Having declarative system for defining the desired
+  state of an image makes the most sense. We are moving towards this
+  in everything else, kubernetes manifest files, puppet, ansible,
+  NixOps. These are all tools which try to encode state into a single
+  declarative set of files. This should be the case for Dockerfiles
+  too. 
+
+- __Secure__: I think this is a huge issue. There have been many
+  studies on how insecure images are on the Dockerhub. so many are out
+  of date, or have vulnerabilities that have already been patched in
+  newer versions. There needs to be a way to integrate security
+  checking into the build tool (optionally), with possible
+  auto-busting of the cache when new patches become
+  available. Deprecation isn't even possible on the Hub.
+
+<!-- - __Reusable__: -->
+
+- __Portable__: It should be possible to run the build process
+  anywhere. From Windows, Linux or Mac, with no issues.
