@@ -1,11 +1,80 @@
-Preparation for Whiteboard Wednesday 23 August 2017
-
 # Introduction to the problem
 
+fine-grained access control to the registry is currently difficult to
+achieve.  
+OpenShift has a solution, but it is heavily integrated, non-HA (we
+think) and I don't think can be extracted for independent use.
 
+We want a few things:
+
+- easy authentication
+- fine-grained authorisation (with audit-trails) 
+- blacklisting based on:
+  - user/role of deployer
+  - CVE vulnerability status
+  - signed/unsigned (trusted) images
+  - others?
 
 # Current Ideas
 
-## 
+## Using Admission Controllers
 
-## 
+fairly easy to integrate (using the `ImagePolicyWebhook`), just need
+to set a few flags and everything will _hopefully_ be great.
+
+example payload:
+
+```
+{  
+  "apiVersion":"imagepolicy.k8s.io/v1alpha1",
+  "kind":"ImageReview",
+  "spec":{  
+    "containers":[  
+      {  
+        "image":"myrepo/myimage:v1"
+      },
+      {  
+        "image":"myrepo/myimage@sha256:beb6bd6a68f114c1dc2ea4b28db81bdf91de202a9014972bec5e4d9171d90ed"
+      }
+    ],
+    "annotations":[  
+      "mycluster.image-policy.k8s.io/ticket-1234": "break-glass"
+    ],
+    "namespace":"mynamespace"
+  }
+}
+```
+
+### Use RBAC for authorization
+
+seems pretty effective. The issue is how do we manage the remote
+service. Initial thoughts are try to integrate into RBAC? Does this
+potentially cause issues with chattiness? ie. K8s -> Remote -> K8s ->
+Remote -> K8s... seems excessive.
+
+### Use something else
+
+This probably won't be as nice, but there are options such as LDAP,
+IAM, others?.
+
+
+# Current Issues
+
+## How do we disable access to repositories
+
+It's all good if we can stop pods being started, but we want to stop
+people being able to download images too...
+Previous idea doesn't need multiple user/pass combinations, just uses
+pre-auth.
+
+I could start a container with `curl` and just pull down whatever I
+wanted from the registry...
+
+### Per User/Role access tokens/passwords
+
+Do we now have to authorize a second time when doing the actual image
+pull? If so, why are we authorizing twice?, we can just return a 403.
+
+### Single User/pass for registry.
+
+Issue described above...
