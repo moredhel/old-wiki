@@ -52,6 +52,11 @@ service. Initial thoughts are try to integrate into RBAC? Does this
 potentially cause issues with chattiness? ie. K8s -> Remote -> K8s ->
 Remote -> K8s... seems excessive.
 
+This seems to actually be used by
+[kube2iam](https://github.com/jtblin/kube2iam), so maybe the tight
+coupling isn't too much of an issue... must make sure that there isn't
+a SPOF though.
+
 ### Use something else
 
 This probably won't be as nice, but there are options such as LDAP,
