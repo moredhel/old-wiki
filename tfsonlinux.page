@@ -1,0 +1,11 @@
+```
+#!/usr/bin/env nix-shell
+#! nix-shell -i bash -p openjdk
+
+/data/bin/git-tf-file/git-tf $@
+```
+
+This needs to be installed: [git-tf](http://gittf.codeplex.com/)
+
+Requirements:
+- Java
