@@ -1,0 +1,31 @@
+[Lycaon (GitHub)](https://github.com/ContainerSolutions/lycaon) is a container registry designed to work in large clusters. It aims to be another implementation, that does not depend on the reference `docker/distribution` code which most (all?) others do.
+
+I hope this tool serves a couple of purposes.
+
+1. We solve a real problem that people are having, there is no point in building something that nobody wants.
+2. We open up the Docker registry to more innovation, it feels like it is stagnating at the moment, and I would like to see more work done in this area.
+3. I don't like that there is only one implementation of an open standard, this is the fix (see rkt as another example of this mindset).
+4. All enterprise-ready Registries are very expensive and pretty heavy-weight.
+
+Adrian summarised our main (as of July 2017) goals for the project:
+
+Lycaon
+---------
+
+The Kubernetes Registry (maybe Cluster-First registry, still working on a tag-line).
+
+Organisations, especially enterprises have several common requirements for a registry (image store):
+
+ - Run locally. Often organizations require this either for control (security or regulatory concerns) or speed (faster integration with CI/CD or deployments).
+ - Control over provenance of images; which base layers can be used (a common wish is to ban the use of Docker Hub)
+ - Authentication and Authorization; who can push/pull.
+ - Highly Available; should run across multiple nodes and tolerate the loss of an instance.
+ - Supported; there should be someone they can call if they experience issues or require bespoke changes or configuration.
+
+These requirements are not met by any current solution (I'll probably write-up a comparison document at some point). For this reason we have started creating our Registry product, codenamed Lycaon. The main USP of Lycaon is that it is designed to integrate with existing orchestration solutions. It will run on the customer's infra, either on-prem or in the cloud. The initial version will target Kubernetes. The planned feature set is:
+
+ - Feature equivalence with Docker Distribution (push/pull/list images)
+ - Integrate with Kubernetes RBAC for auth & authz. Admins can control which images and repositories can be used through the exisitng Kubernetes mechanisms; no need for complex integration work.
+ - Highly Available. Lycaon is designed to be run over several nodes and handle network/hardware errors where possible.
+ - Fast and Safe. Lycaon is being written in Rust, a strongly typed language designed for creating fast and safe systems software.
+ - Controls for preventing the use of unauthorised registries e.g. the Docker Hub. This will allow organizations to control the provenance of their images. Initially, this may require assumptions  about how images are built, later versions should integrate with CI/CD and security software to enforce policies.
