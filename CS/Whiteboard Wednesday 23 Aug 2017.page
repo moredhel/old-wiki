@@ -83,3 +83,7 @@ pull? If so, why are we authorizing twice?, we can just return a 403.
 ### Single User/pass for registry.
 
 Issue described above...
+
+### How do we know who issued the deploy
+
+If using a CI/CD pipeline, how do we know who issued the deploy?
