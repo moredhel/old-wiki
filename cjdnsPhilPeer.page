@@ -1,0 +1,8 @@
+```
+"54.36.18.68:43211" = {
+  # "contact" = "hamish@aoeu.me",
+  password = "e098f04187db2ad332294640a16d2576";
+  hostname = "nixos-master";
+  publicKey = "0194d7156x7jjq8793u8tyl1q9lm18ufbvwv263uf0wbwj0pssd0.k";
+};
+```
